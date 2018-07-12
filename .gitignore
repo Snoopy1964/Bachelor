@@ -3,3 +3,5 @@ packrat/lib*/
 data
 
 packrat/src/
+.RData
+.Rhistory
