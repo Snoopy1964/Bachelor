@@ -22,8 +22,6 @@ ds.na.code    <- dplyr::filter(tmp.ds, is.na(three_digit) )
 missing.codes <- count(ds.na.code, ICD10)
 ggplot(dplyr::filter(missing.codes, n >= 1000)) + geom_point(mapping=aes(x=ICD10, y=n))
 
-
-
 ###### joining the data right!
 
 ICD10.codes3 <- as.tibble(dplyr::filter(icd10cm2016[, c("code", "major", "sub_chapter", "chapter")], str_length(code)==3))
@@ -88,3 +86,6 @@ rm("Trip.old", "Trip.new", "i")
 #----------------------------------------------------------------------
 # end of de-duplicate trips and write back as csv
 #############################################################################
+
+
+# new stuff will be added here:-)
