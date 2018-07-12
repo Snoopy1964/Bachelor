@@ -36,10 +36,6 @@ ds.na.code    <- dplyr::filter(ds.tmp, is.na(major) )
 missing.codes <- count(ds.na.code, ICD10)
 ggplot(dplyr::filter(missing.codes, n >= 10)) + geom_point(mapping=aes(x=ICD10, y=n))
 
-# do something new
-
-
-
 ######################################################################
 # de-duplicate trips and write back as csv
 #----------------------------------------------------------------------
