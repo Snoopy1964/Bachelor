@@ -223,6 +223,8 @@ Tours.MS6 <- cbind(Schiff=rep("MS6", length(Tours.MS6[1])), Tours.MS6)
 # concatenate all Tours into one Tibble
 Tours <- as_tibble(rbind(Tours.MS1, Tours.MS2, Tours.MS3, Tours.MS4, Tours.MS5, Tours.MS6))
 
+# extract Port Names
+PortNames <- unique(Tours, `Port Name`)
 
 # split "Port Name" into "Port" and "Country"
 Tours <- Tours %>% 
@@ -253,7 +255,7 @@ Tours <- Tours %>%
 
 
 # clean up memory
-rm(list = ls(pattern = glob2rx("Tours.*")))
+#rm(list = ls(pattern = glob2rx("Tours.*")))
 rm(list = ls(pattern = glob2rx("fileName.*")))
 rm(tmp.names)
 
