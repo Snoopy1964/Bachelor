@@ -31,11 +31,11 @@
 ##########################################################################################
 
 # (1) read Trips -> readTrips.R
-source('C:/Users/user/R-Workspace/Bachelor/readTrips.R')
+source('readTrips.R')
 
 
 # (2) read Tours -> readTours.R
-source('C:/Users/user/R-Workspace/Bachelor/readTours.R')
+source('readTours.R')
 
 ##########################################################################################
 #
