@@ -2,5 +2,12 @@ packrat/lib*/
 packrat/src/
 .Rproj.user
 data
+<<<<<<< HEAD
 .RData
 .Rhistory
+=======
+
+packrat/src/
+.RData
+.Rhistory
+>>>>>>> 9c7877a5d104c07eb842a2d086fe36bb1f890d1b
