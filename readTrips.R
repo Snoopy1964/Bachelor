@@ -9,10 +9,6 @@
 #     - DateStart
 #     - DateEnd
 #     
-
-
-#----------------------------------------------------------------------
-fileName.Mapping <- "data/mapping_cruise_start_end.csv"
 #----------------------------------------------------------------------
 
 Trip.tmp <- read_csv("data/mapping_cruises_start_end.csv", 
@@ -33,7 +29,7 @@ Trip.tmp <-
 # build factor for Schiff  
   mutate(Schiff = as.factor(Schiff))                 %>%
 # Join passenger numbers and route
-  full_join(Trips.Pax[,c("Schiff", "Year", "SeqNr", "Route", "Pax.Count")], by=c("Schiff", "Year", "SeqNr")) %>%
+  full_join(Trips.Pax[,c("Schiff", "Year", "SeqNr", "Route", "PaxNr")], by=c("Schiff", "Year", "SeqNr")) %>%
 # build TripNumber
   mutate(TripNumber = str_c(Schiff,Year,SeqNr, sep="-")) 
   

@@ -42,37 +42,10 @@ source('readTours.R')
 # (3) Read Incidents
 #
 ##########################################################################################
-ds.2012 <- read_delim("data/Incidents/2012.csv",";", 
+tmp.ds <- read_delim("data/ds.csv",";", 
                       escape_double = FALSE, 
                       col_types = cols(Crew = col_logical(),
-                                       Datum = col_date(format = "%d.%m.%Y")), trim_ws = TRUE)
-ds.2013 <- read_delim("data/Incidents/2013.csv",";", 
-                      escape_double = FALSE, 
-                      col_types = cols(Crew = col_logical(),
-                                       Datum = col_date(format = "%d.%m.%Y")), trim_ws = TRUE)
-ds.2014 <- read_delim("data/Incidents/2014.csv",";", 
-                      escape_double = FALSE, 
-                      col_types = cols(Crew = col_logical(),
-                                       Datum = col_date(format = "%d.%m.%Y")), trim_ws = TRUE)
-ds.2015 <- read_delim("data/Incidents/2015.csv",";", 
-                      escape_double = FALSE, 
-                      col_types = cols(Crew = col_logical(),
-                                       Datum = col_date(format = "%d.%m.%Y")), trim_ws = TRUE)
-ds.2016 <- read_delim("data/Incidents/2016.csv",";", 
-                      escape_double = FALSE, 
-                      col_types = cols(Crew = col_logical(),
-                                       Datum = col_date(format = "%d.%m.%Y")), trim_ws = TRUE)
-ds.2017 <- read_delim("data/Incidents/2017.csv",";", 
-                      escape_double = FALSE, 
-                      col_types = cols(Crew = col_logical(),
-                                       Datum = col_date(format = "%d.%m.%Y")), trim_ws = TRUE)
-ds.2018 <- read_delim("data/Incidents/2018.csv",";", 
-                      escape_double = FALSE, 
-                      col_types = cols(Crew = col_logical(),
-                                       Datum = col_date(format = "%d.%m.%Y")), trim_ws = TRUE)
-
-tmp.ds <- rbind(ds.2012, ds.2013, ds.2014, ds.2015, ds.2016, ds.2017, ds.2018)
-
+                                       Datum = col_date(format = "%Y-%m-%d")), trim_ws = TRUE)
 
 # convert ICD10 to code format of icd.data::icd10cm2016
 tmp.ds <- tmp.ds %>% 
