@@ -1,5 +1,8 @@
+################################################################################
 #
-# (1) read (de-duplicated) mapping trips
+# (1) read Passenger Numbers for Trips
+#     
+# (2) read (de-duplicated) mapping trips
 #     mapping contains
 #     - TravelNumberTrip -> TripNumber
 #     - TravelNumberDesc -> TripDescription
@@ -11,6 +14,10 @@
 #     
 #----------------------------------------------------------------------
 
+# (1) read Passenger Numbers for Trips
+source('C:/Users/user/R-Workspace/Bachelor/readPassengers.R')
+
+# (2) read (de-duplicated) mapping trips
 Trip.tmp <- read_csv("data/mapping_cruises_start_end.csv", 
                      col_types = cols(TravelNumberMonthDateEnd   = col_date(format = "%Y-%m-%d"), 
                                       TravelNumberMonthDateStart = col_date(format = "%Y-%m-%d")))

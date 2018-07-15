@@ -34,70 +34,27 @@ ds.na.code    <- dplyr::filter(ds.tmp, is.na(major) )
 missing.codes <- count(ds.na.code, ICD10)
 ggplot(dplyr::filter(missing.codes, n >= 10)) + geom_point(mapping=aes(x=ICD10, y=n))
 
-######################################################################
-# de-duplicate trips and write back as csv
-#----------------------------------------------------------------------
-#     mapping contains
-#     - TravelNumberTrip 
-#       Every trip is splitted at the end of the month and needs to be combined
-#     - TravelNumberDesc
-#       typically in the form <harbor-start>/<harbor-end> of trip, but
-#       sometimes it's just a description like "Karibik trifft Mittelmeer II" 
-#       or "Kurzreise Lissabon & Ibizza"
-#     - DateStart
-#     - DateEnd
-#----------------------------------------------------------------------
-fileName.Mapping      <- "data/Passagierzahlen/Mapping Cruise Start End.xlsx"
-fileName.deDuplecated <- "data/mapping_cruises_start_end.csv"
-#----------------------------------------------------------------------
-
-Trip.tmp <- read_excel(fileName.Mapping,
-                       range = "A1:D940", 
-                       col_types = c("text", "text", "date", "date"))
-
-Trip.old <- Trip.tmp[[1,1]]
-for (i in 2:length(Trip.tmp$TravelNumberTrip)) {
-  Trip.new <- Trip.tmp[[i,1]]
-  if(Trip.old == Trip.new){
-    # print(sprintf("i: %3i, old: %s, new: %s",i, Trip.old, Trip.new))
-    # print(Trip.tmp[i-1,])
-    # print(Trip.tmp[i,])
-    Trip.tmp[[i  ,3]] <- Trip.tmp[[i-1,3]]   # set start date from former row
-    Trip.tmp[[i-1,4]] <- Trip.tmp[[i  ,4]]   # set former end date to current row
-    # print("#----------------")
-    # print(Trip.tmp[i-1,])
-    # print(Trip.tmp[i,])
-  }
-  Trip.old <- Trip.new
-}
-Trip.Mapping <- unique(Trip.tmp)
-# convert Datum from Type Datetime to Date (readxl is always converting to Datetime)
-Trip.Mapping[[3]] <- as.Date(Trip.Mapping[[3]])
-Trip.Mapping[[4]] <- as.Date(Trip.Mapping[[4]])
-
-
-write_excel_csv(Trip.Mapping, fileName.deDuplecated)
-
-
-# clean up memory
-rm(list = ls(pattern = glob2rx("*.tmp")))
-rm("Trip.old", "Trip.new", "i")
-
-#----------------------------------------------------------------------
-# end of de-duplicate trips and write back as csv
-#############################################################################
 
 #############################################################################
 # get (long,lat) for PortNames
 #----------------------------------------------------------------------------
-# Remove NA, At Sea, etc.
-PortNames.tmp <- PortNames[c(-1, -3, -4)]
 
-ports.tmp <- as_tibble(GNsearch(q=PortNames.tmp[[1]], maxRows=1))
-# for(i in 2:length(PortNames)){
-for(i in 2:10){
-  print(i)
-  ports.tmp <- rbind(ports.tmp, GNsearch(q=PortNames[[i]], maxRows=1)) 
+ports.tmp <- as_tibble(GNsearch(q=PortNames.tmp[[1]], maxRows=1)[,c(-1,-11)])
+for(i in 2:length(PortNames)){
+# for(i in 2:10){
+  tmp <- GNsearch(q=PortNames[[i]], maxRows=1)
+  if( ncol(tmp) == 16) {
+    print(sprintf("row: %i, ncol: %i, %s", i, ncol(tmp), PortNames[[i]]))
+    ports.tmp <- rbind(ports.tmp, tmp[,c(-1,-11)])
+  } else if(ncol(tmp) == 15) {
+    print(sprintf("row: %i, ncol: %i, %s", i, ncol(tmp), PortNames[[i]]))
+    ports.tmp <- rbind(ports.tmp, tmp[,c(-1)])
+  } else if(ncol(tmp) == 14) {
+    print(sprintf("row: %i, ncol: %i, %s", i, ncol(tmp), PortNames[[i]]))
+    ports.tmp <- rbind(ports.tmp, tmp)
+  } else {
+    print(sprintf("row: %i, ncol: %i, %s", i, ncol(tmp), PortNames[[i]]))
+  }
 }
                          
 #----------------------------------------------------------------------------

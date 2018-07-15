@@ -1,22 +1,32 @@
 ##########################################################################################
 #
-# Read Tours (combined file from combineTours.R)
+# Read Tours (combined file from combineTours.R) -> this file contains the raw data for 
+# Port Names, which are very messy. The Names need to be manually corrected (at the moment)
+# to be used with geoname::GNSearch().
+#
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Please use Tours_corrected.csv only
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #
 ##########################################################################################
 
 #
 #----------------------------------------------------------------------
-fileName <- "data/Tours.csv"
+fileName <- "data/Tours_corrected.csv"
 #----------------------------------------------------------------------
-Tours <- read_delim("data/Tours.csv", ";",
+Tours <- read_delim(fileName, ";",
                     escape_double = FALSE, 
-                    col_types = cols(Datum  = col_date(format = "%Y-%m-%d"),
+                    col_types = cols(Datum  = col_date(format = "%d.%m.%Y"),
                                      Schiff = col_factor(levels = c("MS1", "MS2", "MS3", "MS4", "MS5", "MS6"))),
                     trim_ws = TRUE)
 
+# Read Ports
+Ports <- read_delim("data/Ports.csv", 
+                    ";",
+                    escape_double = FALSE, 
+                    col_types = cols(lat = col_double(),
+                                     lng = col_double()), trim_ws = TRUE)
 
-# extract Port Names
-PortNames <- unique(Tours[["Port Name"]])
 
 # split "Port Name" into "Port" and "Country"
 Tours <- Tours %>% 
