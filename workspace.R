@@ -61,7 +61,23 @@ for(i in 2:length(PortNames)){
 # end of get (long,lat) for PortNames
 #############################################################################
 
+#############################################################################
+# Plot Ports on map
+#---------------------------------------------------------------------------
+ggplot() + 
+  geom_polygon(data=map_data("world"), 
+               aes(x=long, y=lat, group=group), fill="grey80") + 
+  geom_point(data=Ports,
+             aes(x=lng, y=lat, fill="red", size = )) +
+  xlim(-150,120) +
+  ylim(-60,80)
 
+
+#----------------------------------------------------------------------------
+# end of Plot Ports on map
+#############################################################################
+map.Europe <- get_map(location = c(lon=0, lat=50), zoom = 3, maptype="terrain")
+ggmap(map.Europe) + geom_point(data=Ports, aes(x=lng, y=lat, size=population)) + xlim(-30,30) + ylim(20,70)
 
 # new stuff will be added here:-)
 

@@ -62,11 +62,11 @@ tmp.ds[[3]] <- as.factor(tmp.ds[[3]])
 tmp.ds <- left_join(tmp.ds, dplyr::filter(icd10cm2016[, c("code","three_digit", "major", "sub_chapter", "chapter")], str_length(code)==3), by=c("ICD10.code" = "three_digit"))
 
 # add Harbor and Country from Tours
-ds.all <- left_join(tmp.ds,Tours[,c("Datum", "Schiff", "Port","Country", "TripNumber")], by=c("Datum", "Schiff"))
+ds.all <- left_join(tmp.ds,Tours[,c("Datum", "Schiff", "Port Name","countryCode", "long", "lat")], by=c("Datum", "Schiff"))
 
 
-# only for 2014 - 2017 all data is available
-ds <- ds.all %>% dplyr::filter(year(Datum) %in% c(2014, 2015, 2016, 2017))
+# location information is only available for Dates >= min(Tours$Datum) and Dates <= max(Tours$Datum)
+ds.loc <- ds.all %>% dplyr::filter(!is.na(long))
 
 # clean up temporary objects
 rm(list = ls(patter=glob2rx("ds.20*")))

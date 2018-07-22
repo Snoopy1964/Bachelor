@@ -37,7 +37,7 @@ PortNames <- unique(Tours[["Port Name"]])
 PortNames <- PortNames[c(-1,     -3,       -4,     -116,         -142)]
 
 # - extract geo information with geonames::GNSearch
-ports.tmp <- as_tibble(GNsearch(q=PortNames.tmp[[1]], maxRows=1)[,c(-1,-11)])
+ports.tmp <- as_tibble(GNsearch(q=PortNames[[1]], maxRows=1)[,c(-1,-11)])
 for(i in 2:length(PortNames)){
   # for(i in 2:10){
   tmp <- GNsearch(q=PortNames[[i]], maxRows=1)
@@ -50,8 +50,9 @@ for(i in 2:length(PortNames)){
   } else {
     print(sprintf("row: %i, ncol: %i, %s", i, ncol(tmp), PortNames[[i]]))
   }
+  print(sprintf("row: %i, ncol: %i, %s", i, ncol(tmp), PortNames[[i]]))
 }
-Ports <- as_tibble(cbind(`Port Names` = PortNames,ports.tmp))[,c(1,2,14,9,8,11,3:7,10,12:13,15)]
+Ports <- as_tibble(cbind(`Port Name` = PortNames, ports.tmp))[,c(1,2,14,9,8,11,3:7,10,12:13,15)]
 
 # - write to csv file Ports.csv
 write.csv2(Ports, "./data/Ports.csv", row.names=FALSE)
