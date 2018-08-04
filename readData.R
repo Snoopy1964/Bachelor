@@ -68,6 +68,24 @@ ds.all <- left_join(tmp.ds,Tours[,c("Datum", "Schiff", "Port Name","countryCode"
 # location information is only available for Dates >= min(Tours$Datum) and Dates <= max(Tours$Datum)
 ds.loc <- ds.all %>% dplyr::filter(!is.na(long))
 
+# filter for infections
+infect.codes <- c(
+  "B01", # (Varizellen)
+  "B02", # (zoster)
+  "A09", # (Gastroenterologie)
+  "J00", # (Streptokokken)
+  "J02", # (Streptokokken)
+  "J03", # (Streptokokken)
+  "J11", # (Grippe)
+  "A52", # (Syphilis 1)
+  "A53", # (Syphilis 2)
+  "A54", # (Syphilis 3)
+  "A16"  # (Tuberkulose)
+)
+
+ ds.loc.infect <- ds.loc %>% dplyr::filter(ICD10.code %in% infect.codes)
+
+
 # clean up temporary objects
 rm(list = ls(patter=glob2rx("ds.20*")))
 rm(tmp.ds)

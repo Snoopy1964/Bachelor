@@ -34,6 +34,21 @@ ds.na.code    <- dplyr::filter(ds.tmp, is.na(major) )
 missing.codes <- count(ds.na.code, ICD10)
 ggplot(dplyr::filter(missing.codes, n >= 10)) + geom_point(mapping=aes(x=ICD10, y=n))
 
+#############################################################################
+# retrieve Tour from Tours-tibble by analyzing "Day number"
+#----------------------------------------------------------------------------
+Tours.tmp <- Tours %>% dplyr::filter(`Turn or Call` == "T" )
+Itinerary.attributes <- c(1,2,3,6,9,11)
+Itinerary <- as.tibble(cbind(Tours.tmp[1,Itinerary.attributes], Tour.start = Tours.tmp$Datum[1], Tour.end=Tours.tmp$Datum[1]))
+for (i in 2:length(Tours.tmp$Datum)) {
+  Itinerary$Tour.end[i-1] <- Tours.tmp$Datum[i]
+  Itinerary <- rbind(Itinerary, as.tibble(cbind(Tours.tmp[i,Itinerary.attributes], Tour.start = Tours.tmp$Datum[i], Tour.end = Tours.tmp$Datum[i])))
+}
+
+
+#----------------------------------------------------------------------------
+# end of retrieve Tour from Tours-tibble by analyzing "Day number"
+#############################################################################
 
 #############################################################################
 # get (long,lat) for PortNames
@@ -64,20 +79,97 @@ for(i in 2:length(PortNames)){
 #############################################################################
 # Plot Ports on map
 #---------------------------------------------------------------------------
+ds.port.inc <- ds.loc.infect %>% group_by(`Port Name`) %>% summarise(Nr=n()) %>% left_join(Ports,by="Port Name")
+
 ggplot() + 
   geom_polygon(data=map_data("world"), 
                aes(x=long, y=lat, group=group), fill="grey80") + 
-  geom_point(data=Ports,
-             aes(x=lng, y=lat, fill="red", size = )) +
+  geom_point(data=ds.port.inc,
+             aes(x=lng, y=lat, size = Nr ), alpha=1/3) +
+  guides(size=guide_legend("Anzahl Infektionen")) + 
+  scale_size_continuous(breaks=c(10,100, 200, 300, 400, 500, 600, 700, 800, 900, 1000), range = c(1, 10)) +
   xlim(-150,120) +
-  ylim(-60,80)
+  ylim(-20,80)
+# same plot with ggmap and google map
+world.map <- get_googlemap(center=c(lon=10,lat=52), 
+                          zoom=2, 
+                          size=c(640,410), 
+                          key="", 
+                          scale = 2, 
+                          language = "de-DE")
+ggmap(world.map) + 
+  geom_point(data=ds.port.inc,
+             aes(x=lng, y=lat, size = Nr ), colour="red", alpha=1/3) +
+  guides(size=guide_legend("Anzahl Infektionen")) + 
+  scale_size_continuous(breaks=c(10,100, 200, 300, 400, 500, 600, 700, 800, 900, 1000), range = c(1, 10))
+
+# mit density plot
+ggmap(world.map) + 
+  geom_point(data=ds.port.inc,
+             aes(x=lng, y=lat), colour="red", alpha=1/3) +
+  stat_density2d(aes(x = lng, y = lat,
+                   fill = ..level.., alpha = ..level..),
+               size = 1, bins = 10,
+               data = select(ds.port.inc, lng, lat, Nr),
+               contour = TRUE)
+  
+
+#--------------------------------------------
+# Schiff in different colours
+ds.port.MS.inc <- ds.loc.infect %>% group_by(`Port Name`,Schiff) %>% summarise(Nr=n()) %>% left_join(Ports,by="Port Name")
+
+ggplot() + 
+  geom_polygon(data=map_data("world"), 
+               aes(x=long, y=lat, group=group), fill="grey80") + 
+  geom_point(data=ds.port.MS.inc,
+             aes(x=lng, y=lat, size = Nr, colour=Schiff ), alpha=1/3) +
+  xlim(-150,120) +
+  ylim(-20,80) + 
+  guides(size=guide_legend("Anzahl Infektionen"), colour=guide_legend("Schiffe"))
+
+#-------------------------------------------
+# some more experiments
+ggmap(map.Europe) +
+  geom_point(data=ds.port.MS.inc,
+             aes(x=lng, y=lat, size = Nr, colour=Schiff ), alpha=1/2) +
+  guides(size=guide_legend("Anzahl Infektionen"), colour=guide_legend("Schiffe")) + 
+  scale_size_continuous(range = c(5, 10))
 
 
 #----------------------------------------------------------------------------
 # end of Plot Ports on map
 #############################################################################
-map.Europe <- get_map(location = c(lon=0, lat=50), zoom = 3, maptype="terrain")
+map.Europe <- get_map(location = c(lon=0, lat=50), zoom = 4, maptype="terrain")
 ggmap(map.Europe) + geom_point(data=Ports, aes(x=lng, y=lat, size=population)) + xlim(-30,30) + ylim(20,70)
 
 # new stuff will be added here:-)
+
+#
+# some interessting stuff concening geo mapping 
+# from https://stackoverflow.com/questions/11201997/world-map-with-ggmap
+#
+# bigmap definition (file )
+# Map is 11x8 tiles (2816x2048 px) at zoom 4, aspect 1.4:1
+# Bbox is -112.50, -40.98, 135.00, 79.17 (l,b,r,t)
+zoom <- 2
+map.world <- readPNG("data/bigmap/map-world-high.png")
+map.world <- as.raster(apply(map.world, zoom, rgb))# cut map to what I really need
+pxymin <- LonLat2XY (-112.50,79,17,zoom+8)$Y # zoom + 8 gives pixels in the big map
+pxymax <- LonLat2XY (135.00,-40.98,zoom+8)$Y # this may or may not work with google
+map.world <- map.world[pxymin : pxymax,]
+# set bounding box
+# attr(map.world, "bb") <- data.frame(ll.lat = XY2LonLat(0, pxymax + 1, zoom+8)$lat,
+#                                     ll.lon = -40.98,
+#                                     ur.lat = round (XY2LonLat (0, pxymin, zoom+9)$lat),
+#                                     ur.lon = 79.17)
+attr(map.world, "bb") <- data.frame(ll.lat = XY2LonLat(0, pxymax + 1, zoom+8)$lat,
+                                    ll.lon = -40.98,
+                                    ur.lat = round (XY2LonLat (0, pxymin, zoom+9)$lat),
+                                    ur.lon = 180)
+class(map.world) <- c("ggmap", "raster")
+ggmap(map.world)
+
+
+
+
 
