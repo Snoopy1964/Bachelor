@@ -39,10 +39,11 @@ ggplot(dplyr::filter(missing.codes, n >= 10)) + geom_point(mapping=aes(x=ICD10, 
 #----------------------------------------------------------------------------
 Tours.tmp <- Tours %>% dplyr::filter(`Turn or Call` == "T" )
 Itinerary.attributes <- c(1,2,3,6,9,11)
-Itinerary <- as.tibble(cbind(Tours.tmp[1,Itinerary.attributes], Tour.start = Tours.tmp$Datum[1], Tour.end=Tours.tmp$Datum[1]))
+Itinerary <- as.tibble(cbind(Tours.tmp[1,Itinerary.attributes], Port.end = Tours.tmp[[1,"Port Name"]], Tour.start = Tours.tmp$Datum[1], Tour.end=Tours.tmp$Datum[1]))
 for (i in 2:length(Tours.tmp$Datum)) {
   Itinerary$Tour.end[i-1] <- Tours.tmp$Datum[i]
-  Itinerary <- rbind(Itinerary, as.tibble(cbind(Tours.tmp[i,Itinerary.attributes], Tour.start = Tours.tmp$Datum[i], Tour.end = Tours.tmp$Datum[i])))
+  Itinerary$Port.end[i-1] <- Tours.tmp[[i,"Port Name"]]
+  Itinerary <- rbind(Itinerary, as.tibble(cbind(Tours.tmp[i,Itinerary.attributes], Port.end = Tours.tmp[[i,"Port Name"]],Tour.start = Tours.tmp$Datum[i], Tour.end = Tours.tmp$Datum[i])))
 }
 
 

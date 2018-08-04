@@ -15,7 +15,7 @@
 #----------------------------------------------------------------------
 
 # (1) read Passenger Numbers for Trips
-source('C:/Users/user/R-Workspace/Bachelor/readPassengers.R')
+source('readPassengers.R')
 
 # (2) read (de-duplicated) mapping trips
 Trip.tmp <- read_csv("data/mapping_cruises_start_end.csv", 
