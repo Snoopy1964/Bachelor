@@ -35,7 +35,8 @@ missing.codes <- count(ds.na.code, ICD10)
 ggplot(dplyr::filter(missing.codes, n >= 10)) + geom_point(mapping=aes(x=ICD10, y=n))
 
 #############################################################################
-# retrieve Tour from Tours-tibble by analyzing "Day number"
+# retrieve Route from Tours-tibble by analyzing "Day number"
+# - actual version in file extractRoutes.R
 #----------------------------------------------------------------------------
 Tours.tmp <- Tours %>% dplyr::filter(`Turn or Call` == "T" )
 Itinerary.attributes <- c(1,2,3,6,9,11)

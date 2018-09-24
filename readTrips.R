@@ -33,12 +33,19 @@ Trip.tmp <-
   mutate(Schiff = str_replace(Schiff, "MSV", "MS4")) %>%
   mutate(Schiff = str_replace(Schiff, "MSZ", "MS2")) %>%
   mutate(Schiff = str_replace(Schiff, "PRE", "MS1")) %>%
-# build factor for Schiff  
+  # build factor for Schiff  
   mutate(Schiff = as.factor(Schiff))                 %>%
-# Join passenger numbers and route
+  # Join passenger numbers and route
   full_join(Trips.Pax[,c("Schiff", "Year", "SeqNr", "Route", "PaxNr")], by=c("Schiff", "Year", "SeqNr")) %>%
-# build TripNumber
-  mutate(TripNumber = str_c(Schiff,Year,SeqNr, sep="-")) 
+  # build TripNumber
+  mutate(TripNumber = str_c(Schiff,Year,SeqNr, sep="-")) %>%
+  arrange(Schiff, StartDate) %>%
+  # fill empty TripDescription with Route, if possible
+  mutate(TripDescription = ifelse(is.na(TripDescription), Route, TripDescription)) %>%
+  # if TripDescription is set, but Route is NA -> Test after construction/repair -> no passengers on board
+  mutate(Route = ifelse(is.na(Route),"Test", Route), PaxNr = ifelse(is.na(PaxNr), 0, PaxNr))
+
+  
   
 # reorder columns
  Trips <- Trip.tmp[,c(9,1:3,5:6,4,7:8)]

@@ -1,8 +1,8 @@
 ##########################################################################################
 #
 # Read Data
-# (1) read Trips -> readTrips.R
-# (2) read Tours -> readTours.R
+# (1) read Trips          -> readTrips.R
+# (2) read Tour.timetable -> readTours.R
 # (3) read Incidents
 #
 #!!!!!!!!!!!!!!! to be adapted, at the moment this is a pure brain dump of useful information and todo's 
@@ -24,7 +24,15 @@
 # MS6: 1040
 #
 #--------------------------------
-
+#                                    capacity for passenger needs to added
+Ships <- tribble(~Schiff, ~CrewCapa, ~PaxCapa,
+                 "MS1"  ,       850,       NA,
+                 "MS2"  ,       850,       NA,
+                 "MS3"  ,      1040,       NA,
+                 "MS4"  ,      1040,       NA,
+                 "MS5"  ,      1040,       NA,
+                 "MS6"  ,      1040,       NA) %>%
+  mutate(Schiff = as.factor(Schiff))
 #
 #
 #
@@ -34,7 +42,7 @@
 source('readTrips.R')
 
 
-# (2) read Tours -> readTours.R
+# (2) read timetable of Tours and extract Tours -> readTours.R
 source('readTours.R')
 
 ##########################################################################################
@@ -62,7 +70,7 @@ tmp.ds[[3]] <- as.factor(tmp.ds[[3]])
 tmp.ds <- left_join(tmp.ds, dplyr::filter(icd10cm2016[, c("code","three_digit", "major", "sub_chapter", "chapter")], str_length(code)==3), by=c("ICD10.code" = "three_digit"))
 
 # add Harbor and Country from Tours
-ds.all <- left_join(tmp.ds,Tours[,c("Datum", "Schiff", "Port Name","countryCode", "long", "lat")], by=c("Datum", "Schiff"))
+ds.all <- left_join(tmp.ds,Tour.timetable[,c("Datum", "Schiff", "Port Name","countryCode", "long", "lat")], by=c("Datum", "Schiff"))
 
 
 # location information is only available for Dates >= min(Tours$Datum) and Dates <= max(Tours$Datum)

@@ -1,11 +1,19 @@
 ######################################################################
 #
 # read Passenger Numbers (Pax) for Cruises
+# There are inconsistent Tripnumbers of the form MSS172123. 
+# These incosistenecies have been manually corrected and stored in 
+# the file data/Passengers_corrected.csv
+#
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Use Passengers_corrected.csv only
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# 
 # - extract TripNumber, Schiff and Year from TripDescription 
 #
 ######################################################################
 
-Trip.tmp <- read_delim("data/Passengers.csv", 
+Trip.tmp <- read_delim("data/Passengers_corrected.csv", 
                        ";", 
                        escape_double = FALSE, 
                        col_types = cols(PaxNr = col_integer(),
@@ -26,11 +34,10 @@ Trips.Pax <- Trip.tmp %>%
   # build factor for Schiff  
   mutate(Schiff = as.factor(Schiff))                 %>%
   # build TripNumber
-  mutate(TripNumber = str_c(Schiff,Year,SeqNr, sep="-")) 
-
-# sort columns
-Trips.Pax <- Trips.Pax[,c(6,1:5)]
-
-names(Trips.Pax)[6] <- "PaxNr"
+  mutate(TripNumber = str_c(Schiff,Year,SeqNr, sep="-")) %>%
+  # sort bei Shiff, Year, and SeqNr
+  arrange(Schiff, Year, SeqNr)                       %>%
+  # sort columns
+  select(TripNumber,Schiff, Year, SeqNr, Route, PaxNr)
 
 rm(Trip.tmp)
