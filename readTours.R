@@ -57,7 +57,7 @@ Repairs <- c("Drydock",
              "Wetdock",
              "Shipyard", 
              "Test, 5 days")
-noPorts <- Repairs %>% append("At Sea")
+NoPorts <- Repairs %>% append("At Sea")
 
 Tour.timetable <- Tours.tmp                 %>% 
   # remove rows with NA entry in "Day number"
