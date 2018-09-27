@@ -1,9 +1,52 @@
 ##########################################################################################
 #
+# Definitionen
+# - Route: 
+#     entspricht eine Abfolge von Häfen, enthält keine konkreten Zeitpunkte, 
+#     kann von verschiedenen Schiffen abgefahren werden. 
+#
+# - Tour (Trip): 
+#     Eine Tour (ein Trip) entspricht einer buchbaren Reise eines Schiffes auf einer bestimmten Route
+#     zu einem bestimmten Zeitpunkt  
+#     mit Start, Ende und Passagierwechsel. 
+#
+# - Inzidenz für Schiffe:
+#     Häufigkeit der Neuerkrankungen bezogen auf die Anzahl der Gäste plus der Crew pro Woche (oder pro Tour?)
+#
+#------------------------------------------------------------------------
+# ToDo's:
+# - Do we need a region for Routes, e.g. Karibik, Mittelmehr, Nordroute, etc.
+#   Wenn ja: welche Regionen?
+# - Tours.timetable: check NA's in 2017-04-24 | MS1 | Valletta / Malta | 14.51472 | 35.89972 | MT | Valletta | NA
+# - add commisioning (Inbetriebnahme) and decommisioning (Außerbetriebnahme) times to Ships
+# - (done) ds: add Port, Tour, Route, PaxNr and CrewNr -> calculate TotalNr = CrewNr + PaxNr
+# - (done) Tours.timetable: add Tours, Routes and PaxNr
+# - (done) get Route information for Tours
+# - (done) write consistency check for Tour.Timetable -> 
+#          for each ship check continous Date
+# - (done) use ICD10 codes from www.dimdi.de (German version) instead of icd.data package
+#          -> readICD10.R (called within readCases.R)
+# - (done) Tour.timetable: LocDesc ist falsch (at Sea für MS1, 2016-04-22 steht At Sea an einem Turn-over Tag) 
+#
+#------------------------------------------------------------------------
+# Descriptive Statistik
+# - sortierte Liste der ICD10.codes in geom bar und pie chart (zum Vergleich)
+# - Top Ten der selektierten Infektionskrankheiten (Kapitel I und X)
+# - sampled.codes.infect (nur für selektierte Krankheiten)
+# - Unterscheidung Gast/Crew inkl. Altersverteilung und Geschlecht
+# - Krankheitsfälle pro Tour pro Schiff
+#
+# Regionale Betrachtung (Häfen)
+# - pro code 1 desease map
+#
+# Saisonale Betrachtung
+# - Zeitreihenanalyse (calendar weeks) plot einzelne Linien pro Krankheit pro Woche pro Schiff pro Route(?)
+#
+#------------------------------------------------------------------------
 # Read Data
-# (1) read Trips          -> readTrips.R
-# (2) read Tour.timetable -> readTours.R
-# (3) read Incidents
+# (2) read Trips          -> readTrips.R
+# (3) read Tour.timetable -> readTours.R
+# (4) read Cases (Incidents)
 #
 #!!!!!!!!!!!!!!! to be adapted, at the moment this is a pure brain dump of useful information and todo's 
 # addtional information
@@ -25,14 +68,15 @@
 #
 #--------------------------------
 #                                    capacity for passenger needs to added
-Ships <- tribble(~Schiff, ~CrewCapa, ~PaxCapa,
-                 "MS1"  ,       850,       NA,
-                 "MS2"  ,       850,       NA,
-                 "MS3"  ,      1040,       NA,
-                 "MS4"  ,      1040,       NA,
-                 "MS5"  ,      1040,       NA,
-                 "MS6"  ,      1040,       NA) %>%
-  mutate(Schiff = as.factor(Schiff))
+Ships <- tribble(~Schiff, ~CrewNr, ~MaxPaxNr,
+                 "MS1"  ,     850,      1924,
+                 "MS2"  ,     850,      1912,
+                 "MS3"  ,    1040,      2506,
+                 "MS4"  ,    1040,      2506,
+                 "MS5"  ,    1040,      2534,
+                 "MS6"  ,    1040,      2534) %>%
+  mutate(Schiff = as.factor(Schiff),
+         TotalMaxNr = CrewNr + MaxPaxNr)
 #
 #
 #
@@ -47,53 +91,7 @@ source('readTours.R')
 
 ##########################################################################################
 #
-# (3) Read Incidents
+# (3) Read Cases (Incidents)
 #
 ##########################################################################################
-tmp.ds <- read_delim("data/ds.csv",";", 
-                      escape_double = FALSE, 
-                      col_types = cols(Crew = col_logical(),
-                                       Datum = col_date(format = "%Y-%m-%d")), trim_ws = TRUE)
-
-# convert ICD10 to code format of icd.data::icd10cm2016
-tmp.ds <- tmp.ds %>% 
-  mutate(ICD10=str_replace(ICD10, "\\.", ""))         %>% 
-  mutate(ICD10.code = factor(str_sub(ICD10, start=1, end=3), levels=levels(icd10cm2016$three_digit))) %>%
-# transform "Mein Schiff 1" to "MS1", etc.  
-  mutate(Schiff = str_replace(Schiff, "ein Schiff ", "S"))
-  
-# convert Schiff from Character to Factor 
-tmp.ds[[3]] <- as.factor(tmp.ds[[3]])
-
-###tmp.icd10cm2016 <- dplyr::filter(icd10.cm2016, str_length(code)==3)
-
-tmp.ds <- left_join(tmp.ds, dplyr::filter(icd10cm2016[, c("code","three_digit", "major", "sub_chapter", "chapter")], str_length(code)==3), by=c("ICD10.code" = "three_digit"))
-
-# add Harbor and Country from Tours
-ds.all <- left_join(tmp.ds,Tour.timetable[,c("Datum", "Schiff", "Port Name","countryCode", "long", "lat")], by=c("Datum", "Schiff"))
-
-
-# location information is only available for Dates >= min(Tours$Datum) and Dates <= max(Tours$Datum)
-ds.loc <- ds.all %>% dplyr::filter(!is.na(long))
-
-# filter for infections
-infect.codes <- c(
-  "B01", # (Varizellen)
-  "B02", # (zoster)
-  "A09", # (Gastroenterologie)
-  "J00", # (Streptokokken)
-  "J02", # (Streptokokken)
-  "J03", # (Streptokokken)
-  "J11", # (Grippe)
-  "A52", # (Syphilis 1)
-  "A53", # (Syphilis 2)
-  "A54", # (Syphilis 3)
-  "A16"  # (Tuberkulose)
-)
-
- ds.loc.infect <- ds.loc %>% dplyr::filter(ICD10.code %in% infect.codes)
-
-
-# clean up temporary objects
-rm(list = ls(patter=glob2rx("ds.20*")))
-rm(tmp.ds)
+source('readCases.R')

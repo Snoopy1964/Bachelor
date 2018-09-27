@@ -2,18 +2,20 @@
 #
 # read Passenger Numbers (Pax) for Cruises
 # There are inconsistent Tripnumbers of the form MSS172123. 
-# These incosistenecies have been manually corrected and stored in 
-# the file data/Passengers_corrected.csv
+# These incosistenecies have been manually corrected in the excel
+# "Pax pro Reise.xsxl". The original excel-file is saved in folder
+# "Original Data of changed Excels"
 #
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# Use Passengers_corrected.csv only
+# Don't use excel, but Passengers.csv
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # 
 # - extract TripNumber, Schiff and Year from TripDescription 
 #
 ######################################################################
 
-Trip.tmp <- read_delim("data/Passengers_corrected.csv", 
+# Trip.tmp <- read_delim("data/Passengers_corrected.csv", 
+Trip.tmp <- read_delim("data/Passengers.csv", 
                        ";", 
                        escape_double = FALSE, 
                        col_types = cols(PaxNr = col_integer(),

@@ -171,7 +171,22 @@ attr(map.world, "bb") <- data.frame(ll.lat = XY2LonLat(0, pxymax + 1, zoom+8)$la
 class(map.world) <- c("ggmap", "raster")
 ggmap(map.world)
 
+#####################################################################################
+# 
+# Consitency Checks
+#
+#------------------------------------------------------------------------------------
+# Passagierzahlen aus Passengers.csv (nicht corrected!!!!)
+# Inconsistency: MS3-2017-3435
 
+Trips.Pax %>% dplyr::filter(str_length(TripNumber) > 11) %>% View()
 
+# Tour.timetable hast to be contious for one ship
+Tour.timetable %>% dplyr::filter(lead(Datum) != Datum+1 & lead(Schiff) == Schiff)
 
+#------------------------------------------------------------------------------------
+# 
+# End of Consitency Checks
+#
+#####################################################################################
 

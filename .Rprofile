@@ -11,4 +11,5 @@ library("zoo", lib.loc="packrat/lib/x86_64-w64-mingw32/3.5.1")
 library("geonames", lib.loc="packrat/lib/x86_64-w64-mingw32/3.5.1")
 library("ggmap", lib.loc="packrat/lib/x86_64-w64-mingw32/3.5.1")
 
+filter <- dplyr::filter
 

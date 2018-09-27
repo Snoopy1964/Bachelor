@@ -20,9 +20,9 @@
 Trip.Pax.MS1 <- read_excel("data/Passagierzahlen/Pax pro Reise.xlsx", sheet = "PRE", range = "A5:B159")
 Trip.Pax.MS2 <- read_excel("data/Passagierzahlen/Pax pro Reise.xlsx", sheet = "MSZ", range = "A5:B182")
 Trip.Pax.MS3 <- read_excel("data/Passagierzahlen/Pax pro Reise.xlsx", sheet = "MSD", range = "A5:B166")
-Trip.Pax.MS4 <- read_excel("data/Passagierzahlen/Pax pro Reise.xlsx", sheet = "MSV", range = "A5:B116")
-Trip.Pax.MS5 <- read_excel("data/Passagierzahlen/Pax pro Reise.xlsx", sheet = "MSF", range = "A5:B68")
-Trip.Pax.MS6 <- read_excel("data/Passagierzahlen/Pax pro Reise.xlsx", sheet = "MSS", range = "A5:B30")
+Trip.Pax.MS4 <- read_excel("data/Passagierzahlen/Pax pro Reise.xlsx", sheet = "MSV", range = "A5:B115")
+Trip.Pax.MS5 <- read_excel("data/Passagierzahlen/Pax pro Reise.xlsx", sheet = "MSF", range = "A5:B67")
+Trip.Pax.MS6 <- read_excel("data/Passagierzahlen/Pax pro Reise.xlsx", sheet = "MSS", range = "A5:B29")
 
 Trip.tmp <- rbind(Trip.Pax.MS1, Trip.Pax.MS2, Trip.Pax.MS3, Trip.Pax.MS4, Trip.Pax.MS5, Trip.Pax.MS6)
 #
@@ -36,7 +36,7 @@ Trip.tmp[[477,1]] <- "MSD1728 - SCHALLWELLEN, FESTIVAL AUF SEE"
 names(Trip.tmp) <- c("TripDescription", "PaxNr")
 
 # write to csv
-write.csv2(Trip.tmp, "./data/Passengers.csv", row.names=FALSE)
+write.csv2(Trip.tmp, "./data/Passengers.csv", row.names=FALSE, fileEncoding = "UTF-8")
 
 # remove temp. objects
 rm(list = ls(pattern = glob2rx("Trip.*")))
@@ -60,7 +60,7 @@ fileName.deDuplecated <- "data/mapping_cruises_start_end.csv"
 #----------------------------------------------------------------------
 
 Trip.tmp <- read_excel(fileName.Mapping,
-                       range = "A1:D940", 
+                       range = "A1:D946", 
                        col_types = c("text", "text", "date", "date"))
 
 Trip.old <- Trip.tmp[[1,1]]
@@ -84,7 +84,12 @@ Trip.Mapping[[3]] <- as.Date(Trip.Mapping[[3]])
 Trip.Mapping[[4]] <- as.Date(Trip.Mapping[[4]])
 
 
-write_excel_csv(Trip.Mapping, fileName.deDuplecated)
+# write_excel_csv(Trip.Mapping, fileName.deDuplecated)
+write.csv2(Trip.Mapping, 
+           fileName.deDuplecated, 
+           quote        = FALSE,
+           row.names    = FALSE,
+           fileEncoding ="UTF-8")
 
 
 # clean up memory
@@ -94,7 +99,7 @@ rm("Trip.old", "Trip.new", "i", "Trip.Mapping")
 
 ##########################################################################################
 #
-# Read Tours and conert to single csv
+# Read Tours and convert to single csv
 #
 ##########################################################################################
 #
@@ -122,15 +127,17 @@ tmp.names[4] <- "Port Name"
 #---------------------------------------------------------
 
 Tours.2014_2015.MS2 <- read_excel(fileName.2014_2015,
-                                  range = "M8:S373", 
+                                  range = "M34:S373", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2014_2015.MS3 <- read_excel(fileName.2014_2015,
-                                  range = "V8:AB373", 
+                                  range = "V81:AB373", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 # adjust names
@@ -142,7 +149,7 @@ names(Tours.2014_2015.MS3) <- tmp.names
 
 #----------------------------------------------------------------------
 #2015-2016
-#   Load data only from 1.4.2015 - 31.3.2016 (Schaltjahr) 
+#   Load data only from 1.4.2015 - 31.03.2016 (Schaltjahr) 
 #                   row        8 - 374
 #
 #----------------------------------------------------------------------
@@ -150,27 +157,32 @@ fileName.2015_2016 <- "data/Tours/ALL - Schedule Season 2015-2016.xlsx"
 #----------------------------------------------------------------------
 
 Tours.2015_2016.MS1 <- read_excel(fileName.2015_2016,
-                                  range = "C8:I374", 
+                                  # adjust because of missing data in the 2016-2017 file 
+                                  range = "C9:I380", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2015_2016.MS2 <- read_excel(fileName.2015_2016,
-                                  range = "K8:Q374", 
+                                  range = "K9:Q378", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2015_2016.MS3 <- read_excel(fileName.2015_2016,
-                                  range = "S8:Y374", 
+                                  range = "S9:Y389", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2015_2016.MS4 <- read_excel(fileName.2015_2016,
-                                  range = "AA8:AG374", 
+                                  range = "AA73:AG376", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 # adjust names
@@ -190,33 +202,38 @@ fileName.2016_2017 <- "data/Tours/ALL - Schedule Season 2016-2017.xlsx"
 #----------------------------------------------------------------------
 
 Tours.2016_2017.MS1 <- read_excel(fileName.2016_2017,
-                                  range = "C8:I373", 
+                                  range = "C15:I373", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2016_2017.MS2 <- read_excel(fileName.2016_2017,
-                                  range = "K8:Q373", 
+                                  range = "K13:Q373", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2016_2017.MS3 <- read_excel(fileName.2016_2017,
-                                  range = "S8:Y373", 
+                                  range = "S24:Y373", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2016_2017.MS4 <- read_excel(fileName.2016_2017,
-                                  range = "AA8:AG373", 
+                                  range = "AA11:AG373", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2016_2017.MS5 <- read_excel(fileName.2016_2017,
-                                  range = "AI8:AO373", 
+                                  range = "AI115:AO373", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 # adjust names
@@ -238,39 +255,45 @@ fileName.2017_2018 <- "data/Tours/ALL - Schedule Season 2017-2018.xlsx"
 #----------------------------------------------------------------------
 
 Tours.2017_2018.MS1 <- read_excel(fileName.2017_2018,
-                                  range = "C8:I434", 
+                                  range = "C9:I384", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2017_2018.MS2 <- read_excel(fileName.2017_2018,
-                                  range = "K8:Q434", 
+                                  range = "K9:Q378", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2017_2018.MS3 <- read_excel(fileName.2017_2018,
-                                  range = "S8:Y434", 
+                                  range = "S9:Y396", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2017_2018.MS4 <- read_excel(fileName.2017_2018,
-                                  range = "AA8:AG434", 
+                                  range = "AA9:AG381", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2017_2018.MS5 <- read_excel(fileName.2017_2018,
-                                  range = "AI8:AO434", 
+                                  range = "AI9:AO383", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 Tours.2017_2018.MS6 <- read_excel(fileName.2017_2018,
-                                  range = "AQ8:AW434", 
+                                  range = "AQ47:AW391", 
                                   col_types = c("date", "text", "text",
-                                                "text", "text", "text", "text"))
+                                                "text", "text", "text", "text"),
+                                  col_names = FALSE)
 
 #---------------------------------------------------------
 # adjust names
@@ -317,8 +340,14 @@ Tours.MS6 <- cbind(Schiff=rep("MS6", length(Tours.MS6[1])), Tours.MS6)
 # concatenate all Tours into one Tibble
 Tours <- as_tibble(rbind(Tours.MS1, Tours.MS2, Tours.MS3, Tours.MS4, Tours.MS5, Tours.MS6))
 
+# convert Datum <dttm> into <Date>
+Tours <- Tours %>% mutate(Datum = format.Date(as.Date(Datum), "%d.%m.%Y"))
+
 # save combined file to csv
-write.csv2(Tours, "./data/Tours.csv", row.names=FALSE)
+write.csv2(Tours, "./data/Tours.csv", 
+           row.names=FALSE, 
+           quote = FALSE,
+           fileEncoding = "UTF-8")
 
 # clean up memory
 rm(list = ls(pattern = glob2rx("Tours.*")))
@@ -327,7 +356,7 @@ rm(tmp.names, Tours)
 
 ##########################################################################################
 #
-# Read Incidents
+# Read Cases (Incidents)
 #
 ##########################################################################################
 ds.2012 <- read_delim("data/Incidents/2012.csv",";", 
@@ -362,7 +391,7 @@ ds.2018 <- read_delim("data/Incidents/2018.csv",";",
 ds.tmp <- rbind(ds.2012, ds.2013, ds.2014, ds.2015, ds.2016, ds.2017, ds.2018)
 
 # save combined file to csv
-write.csv2(ds.tmp, "./data/ds.csv", row.names=FALSE)
+write.csv2(ds.tmp, "./data/ds.csv", row.names=FALSE, fileEncoding = "UTF-8")
 
 # clean up memory
 rm(list = ls(pattern = glob2rx("ds.*")))

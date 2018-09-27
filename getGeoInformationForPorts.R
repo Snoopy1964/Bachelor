@@ -33,8 +33,8 @@ Tours <- read_delim(fileName, ";",
 
 # extract Port Names
 PortNames <- unique(Tours[["Port Name"]])
-# Remove                 NA, At Sea, Dry Dock, Shipyard, "Test, 5 days", etc.
-PortNames <- PortNames[c(-1,     -3,       -4,     -116,         -142)]
+# Remove                 NA, At Sea, Dry Dock, Wetdock, Shipyard, "Test, 5 days"
+PortNames <- PortNames[c(-1,     -3,       -4,    -109,     -117,         -143)]
 
 # - extract geo information with geonames::GNSearch
 ports.tmp <- as_tibble(GNsearch(q=PortNames[[1]], maxRows=1)[,c(-1,-11)])
@@ -55,7 +55,7 @@ for(i in 2:length(PortNames)){
 Ports <- as_tibble(cbind(`Port Name` = PortNames, ports.tmp))[,c(1,2,14,9,8,11,3:7,10,12:13,15)]
 
 # - write to csv file Ports.csv
-write.csv2(Ports, "./data/Ports.csv", row.names=FALSE)
+write.csv2(Ports, "./data/Ports.csv", row.names=FALSE, fileEncoding = "UTF-8")
 
 # clean up memory
 rm(fileName, Tours, PortNames, ports.tmp, Ports, i)
