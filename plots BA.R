@@ -11,7 +11,7 @@
 # zentrale Tabelle Fahrplan der Schiffe im gesamten Zeitraum
 cat("\n\nTour.timetable: zentrale Tabelle Fahrplan der Schiffe im gesamten Zeitraum",
       "\n--------------------------------------------------------------------------\n")
-print(Tour.timetable     %>% 
+print(Tour.timetable.all     %>% 
         group_by(Schiff) %>%
         summarize(min(Datum),max(Datum), NrTours = n())
       )
@@ -26,7 +26,7 @@ print(Tour.timetable                                                %>%
       )
 # kombinierte Tabelle Trips aus "Mapping Cruise Start End.xlsx und "Pax pro Reise.xlsx"
 cat('\n\nTrips: kombinierte Tabelle Trips aus "Mapping Cruise Start End.xlsx" und "Pax pro Reise.xlsx"',
-      '\n--------------------------------------------------------------------------------------------\n')
+      '\n---------------------------------------------------------------------------------------------\n')
 print(Trips %>% summarize(min(StartDate), max(StartDate), min(EndDate), max(EndDate)))
 
 

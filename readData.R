@@ -15,10 +15,11 @@
 #
 #------------------------------------------------------------------------
 # ToDo's:
-# - Do we need a region for Routes, e.g. Karibik, Mittelmehr, Nordroute, etc.
-#   Wenn ja: welche Regionen?
+# - We need a region for Routes, e.g. Karibik, Mittelmehr, Nordroute, etc.
+#   Aber: welche Regionen?
 # - Tours.timetable: check NA's in 2017-04-24 | MS1 | Valletta / Malta | 14.51472 | 35.89972 | MT | Valletta | NA
-# - add commisioning (Inbetriebnahme) and decommisioning (Außerbetriebnahme) times to Ships
+# - (done) Ships: add commisioning (Inbetriebnahme) and decommisioning (Außerbetriebnahme) times to Ships
+# - (done) ds.all: change column Crew in PaxStatus (1=Passanger, 2=Crew)
 # - (done) ds: add Port, Tour, Route, PaxNr and CrewNr -> calculate TotalNr = CrewNr + PaxNr
 # - (done) Tours.timetable: add Tours, Routes and PaxNr
 # - (done) get Route information for Tours
@@ -68,13 +69,13 @@
 #
 #--------------------------------
 #                                    capacity for passenger needs to added
-Ships <- tribble(~Schiff, ~CrewNr, ~MaxPaxNr,
-                 "MS1"  ,     850,      1924,
-                 "MS2"  ,     850,      1912,
-                 "MS3"  ,    1040,      2506,
-                 "MS4"  ,    1040,      2506,
-                 "MS5"  ,    1040,      2534,
-                 "MS6"  ,    1040,      2534) %>%
+Ships <- tribble(~Schiff, ~CrewNr, ~MaxPaxNr, ~ComissioningYear, ~DecommisioningYear,
+                 "MS1"  ,     850,      1924,              2009,                2018,
+                 "MS2"  ,     850,      1912,              2011,                  NA,
+                 "MS3"  ,    1040,      2506,              2014,                  NA,
+                 "MS4"  ,    1040,      2506,              2015,                  NA,
+                 "MS5"  ,    1040,      2534,              2016,                  NA,
+                 "MS6"  ,    1040,      2534,              2017,                  NA) %>%
   mutate(Schiff = as.factor(Schiff),
          TotalMaxNr = CrewNr + MaxPaxNr)
 #

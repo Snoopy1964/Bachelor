@@ -344,7 +344,7 @@ Tours <- as_tibble(rbind(Tours.MS1, Tours.MS2, Tours.MS3, Tours.MS4, Tours.MS5, 
 Tours <- Tours %>% mutate(Datum = format.Date(as.Date(Datum), "%d.%m.%Y"))
 
 # save combined file to csv
-write.csv2(Tours, "./data/Tours.csv", 
+write.csv2(Tours, "./data/TourTimetable.csv", 
            row.names=FALSE, 
            quote = FALSE,
            fileEncoding = "UTF-8")

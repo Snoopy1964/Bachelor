@@ -2,8 +2,10 @@
 #
 # prepare case tables for analysis
 #
-# (1) read ICD10 WHO 2016 codes (German version) from www.dimdi.de (downloaded in data)
-# (2) read cases from incidents file
+# (1) read ICD10 WHO 2016 codes (German version) 
+#     from www.dimdi.de (downloaded in data)
+# (2) read cases from incidents file and 
+#     adjust column "Crew" to "PaxStatus" (0=Crew, 1=Passenger)
 # (3) join icd10.code information
 #
 #
@@ -19,6 +21,9 @@ tmp.ds <- read_delim("data/ds.csv",";",
                      col_types = cols(Crew  = col_logical(),
                                       Datum = col_date(format = "%Y-%m-%d")), 
                      trim_ws = TRUE)
+tmp.ds <- tmp.ds %>% 
+  mutate(PaxStatus = ifelse(Crew,0,1)) %>%
+  select(-"Crew")
 
 # (3) join icd10.code information
 # convert ICD10 to code format of icd10.codes

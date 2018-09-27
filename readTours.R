@@ -8,7 +8,7 @@
 # - Tours for MS3 2017-09-01 ends not at 2017-09-06, but on 2017-09-05
 #
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# Use Tours_corrected.csv only
+# Use TourTimetable_corrected.csv only
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #
 # Tours_corrected.csv contains the full timetable of the tours including information per day
@@ -33,7 +33,7 @@
 
 #
 #----------------------------------------------------------------------
-fileName <- "data/Tours_corrected.csv"
+fileName <- "data/TourTimetable_corrected.csv"
 #----------------------------------------------------------------------
 #   (1) read timetable of tours
 #----------------------------------------------------------------------
@@ -130,9 +130,12 @@ Tours <- Tours.tmp                                                    %>%
 #-------------------------------------------------------------
 #   (6) add Tour and Route to Tour.timetable
 #-------------------------------------------------------------
-Tour.timetable <- Tour.timetable %>% 
+Tour.timetable.all <- Tour.timetable %>% 
   left_join(Tours, by=c("Schiff", "Datum" = "StartDate")) %>% 
-  fill(TourNr,Year,EndDate, DurationDays, Route, PaxNr)   %>%
+  fill(TourNr,Year,EndDate, DurationDays, Route, PaxNr)
+
+# filter for analysis time period (2015-2017)
+Tour.timetable <- Tour.timetable.all %>%
   dplyr::filter(Datum >= "2015-01-01" & Datum < "2018-01-01")
 
 #-------------------------------------------------------------
