@@ -10,22 +10,22 @@
 ################################################################
 
 # Kapitel
-icd10.chapter <- read_delim("data/ICD codes dimdi (deutsch)/Klassifikationsdateien/icd10who2016syst_kapitel.txt",
-                            ";", 
-                            escape_double = FALSE, 
-                            col_names = c("Kapitel.ID", "Kapitel.Titel"),
-                            col_types = cols(
-                              Kapitel.ID = col_character(),
-                              Kapitel.Titel = col_character()
-                            ),
-                            trim_ws = TRUE)
+icd10.chapters <- read_delim("data/ICD codes dimdi (deutsch)/ICD10-WHO-2010/Klassifikationsdateien/icd10who2016syst_kapitel.txt",
+                             ";", 
+                             escape_double = FALSE, 
+                             col_names = c("Kapitel.ID", "Kapitel.Titel"),
+                             col_types = cols(
+                               Kapitel.ID = col_character(),
+                               Kapitel.Titel = col_character()
+                             ),
+                             trim_ws = TRUE)
 
-icd10.chapter <- icd10.chapter %>% 
+icd10.chapters <- icd10.chapters %>% 
   mutate(Kapitel.ID    = as.factor(Kapitel.ID),
          Kapitel.Titel = as.factor(str_c(Kapitel.ID, Kapitel.Titel, sep = " - ")))
 
 # Gruppen
-icd10.groups <- read_delim("data/ICD codes dimdi (deutsch)/Klassifikationsdateien/icd10who2016syst_gruppen.txt",
+icd10.groups <- read_delim("data/ICD codes dimdi (deutsch)/ICD10-WHO-2010/Klassifikationsdateien/icd10who2016syst_gruppen.txt",
                             ";", 
                             escape_double = FALSE, 
                             col_names = c("StartCode", "EndCode", "Kapitel.ID", "Gruppen.Titel"),
@@ -44,7 +44,7 @@ icd10.groups <- icd10.groups %>%
   select(c(5,3,4,1,2))
 
 # Codes
-icd10.codes <- read_delim("data/ICD codes dimdi (deutsch)/Klassifikationsdateien/icd10who2016syst_kodes.txt",
+icd10.codes <- read_delim("data/ICD codes dimdi (deutsch)/ICD10-WHO-2010/Klassifikationsdateien/icd10who2016syst_kodes.txt",
                         ";", 
                         escape_double = FALSE, 
                         col_names = FALSE,
@@ -72,7 +72,7 @@ icd10.codes <- icd10.codes %>%
   # remove unneccesary columns and re-order columns
   select(c(1,5,3,4,6))                               %>% 
   # Join with Titels of chapters
-  left_join(icd10.chapter, by = "Kapitel.ID")
+  left_join(icd10.chapters, by = "Kapitel.ID")
   
 
 
