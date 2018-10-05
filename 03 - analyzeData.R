@@ -73,6 +73,18 @@ print(
     )
 )
 
+# - Gesamtanzahl Passagiere/Schiff im Analyse Zeitraum
+PaxNr.Schiff <- ToursPax %>% 
+  filter(EndDate >= "2015-01-01" & StartDate <= "2017-12-31") %>% 
+  group_by(Schiff) %>% 
+  summarize(PaxGesamt = sum(PaxNr))
+
+# - Gesamtanzahl Passagiere/Region im Analyse Zeitraum
+PaxNr.Region <- ToursPax %>% 
+  filter(EndDate >= "2015-01-01" & StartDate <= "2017-12-31") %>% 
+  group_by(Region) %>% 
+  summarize(PaxGesamt = sum(PaxNr))
+
 #-----------------------------------------------------------------
 # Overview frequencies all Cases grouped by infect groups
 # - chapters 01 & 10
@@ -99,3 +111,25 @@ ds.infect.codes.nr <- ds.infect.codes       %>%
   group_by(Code.ID, Code.Titel)             %>% 
   summarise(Anzahl = n())                   %>% 
   arrange(desc(Anzahl))
+
+# - same grouped by ships
+ds.infect.codes.ship.nr <- ds.infect.codes  %>%
+  group_by(Schiff, Code.ID, Code.Titel)     %>%
+  summarize(Anzahl = n())                   %>%
+  # calculate relative frequencies per ship
+  # (Nr divided by total number of passengers
+  # in analysis time period)
+  left_join(PaxNr.Schiff, by = "Schiff")    %>%
+  mutate(relFreq = Anzahl / PaxGesamt)
+
+# - same grouped by Region
+ds.infect.codes.region.nr <- ds.infect.codes  %>%
+  group_by(Region, Code.ID, Code.Titel)     %>%
+  summarize(Anzahl = n())                   %>%
+  # calculate relative frequencies per ship
+  # (Nr divided by total number of passengers
+  # in analysis time period)
+  left_join(PaxNr.Region, by = "Region")    %>%
+  mutate(relFreq = Anzahl / PaxGesamt)
+
+

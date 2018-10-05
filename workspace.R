@@ -1,7 +1,7 @@
 #############################################################################
 # Plot Ports on map
 #---------------------------------------------------------------------------
-ds.port.inc <- ds.loc.infect %>% group_by(`Port Name`) %>% summarise(Nr=n()) %>% left_join(Ports,by="Port Name")
+ds.port.inc <- ds.infect.chapters %>% group_by(`Port Name`) %>% summarise(Nr=n()) %>% left_join(Ports,by="Port Name")
 
 ggplot() + 
   geom_polygon(data=map_data("world"), 
@@ -70,7 +70,7 @@ ggmap(world.map) +
   scale_size_continuous(breaks=c(10,100, 200, 300, 400, 500, 600, 700, 800, 900, 1000), range = c(1, 10))
 
 # mit density plot
-ggmap(world.map) + 
+ggmap(map.Welt) + 
   geom_point(data=ds.port.inc,
              aes(x=lng, y=lat), colour="red", alpha=1/3) +
   stat_density2d(aes(x = lng, y = lat,
@@ -236,29 +236,19 @@ graph
 #     size = 2
 #   )
 
-# - geojsonio experiment
-regions <- 
-  geojson_read("maps/Regions.json", what = "sp") %>%
-  fortify() %>%
-  as.tibble() %>%
-  mutate(
-    region = ifelse(id == 0, "Nordamerika", NA),
-    region = ifelse(id == 1, 
-                    "Mittelamerika & Karibik", 
-                    ifelse(!is.na(region), region, NA)),
-    region = ifelse(id == 2, 
-                    "Nordland & Großbritanien", 
-                    ifelse(!is.na(region), region, NA))
-  )
-                                   
-"Westeuropa"                                                   
-"Südeuropa & Mittelmeer"                                     
-"Mittelamerika & Karibik"                                    
-"Asien"                                                        
-"Ostsee & Baltikum"                                          
-"Orient"                                                       
-"Kanaren"                                                      
-"Nordamerika"                                                  
+
+                                              
 
 ggmap(map.Welt) + 
-  geom_polygon(aes(long, lat, group = group), data = regions.geojson)
+  geom_polygon(aes(long, lat, group = group, fill = region), data = regions, alpha = 0.5) +
+  geom_point(aes(lng, lat), data = Ports, color = "red") +
+  theme(#legend.title     = "ICD10 Code",
+    legend.position  = "bottom",
+    legend.direction = "vertical")
+
+
+# check read parameters
+regions <- 
+  geojson_read("maps/Regions.json", parse=TRUE, what = "sp")
+
+# Punkt: 27.94921875, 78.76779175784321

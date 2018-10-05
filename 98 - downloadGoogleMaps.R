@@ -34,7 +34,7 @@ style_str <- str_c(
 # Weltkarte für Übersicht
 map.Welt <-
   get_googlemap(
-    center = c(lon = 15, lat = 52),
+    center = c(lon = 15, lat = 54),
     zoom = 2,
     size = c(640, 410),
     key = "AIzaSyDONI14MPhXkFu_j3J5UiC7TMIuSOeAiB8",
