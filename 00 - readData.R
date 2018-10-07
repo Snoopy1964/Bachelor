@@ -145,6 +145,9 @@ ToursPax <- read_delim(
   ),
   trim_ws = TRUE
 )
+# - Region wurde aus der TourPax Datei extrahiert. Diese enthält jedoch alle Transits
+#   Transits sind jedoch noch nicht berücksichtigt, daher erst einmal herausnehmen!
+ToursPax <- select(ToursPax, -Region)
 
 ##########################################################################################
 #
@@ -167,7 +170,8 @@ ds.all <- Cases %>%
   #  - Join der GeoInformationen
   left_join(Ports, by="Port Name")                     %>%
   #  - Join der Route und der Region, sowie der Passagierzahlen (Pax)
-  left_join(select(ToursPax, -Year, -Region), by=c("TourNr", "Schiff"))        %>%
+  # left_join(select(ToursPax, -Year, -Region), by=c("TourNr", "Schiff"))        %>%
+  left_join(select(ToursPax, -Year), by=c("TourNr", "Schiff"))        %>%
   #  - Join der Crew-Zahlen, abgeschätzt durch max. Capa bei Vollbesetzung
   left_join(select(Ships,"Schiff","CrewNr"),by="Schiff")    %>%
   #  - Berechne die Gesamtanzahl der Personen an Board (TotalNr)

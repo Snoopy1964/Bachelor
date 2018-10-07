@@ -1,6 +1,13 @@
 #
 # Plots für Bacherarbeit
 #
+# ToDo:
+# - Zentrale Tabelle der Fahrpläne stimmt nicht
+#
+#
+#
+#
+#
 #
 
 source('97 - loadLocalMaps.R')
@@ -9,12 +16,15 @@ source('97 - loadLocalMaps.R')
 # Statistik
 #----------------------------------------------------------------------
 
+# ToDo: !!!!!!!!!!!!!!!!!!!!!! Hier stimmt was nicht!!!!!!!!!!!!!!!!!!!!!
 # zentrale Tabelle Fahrplan der Schiffe im gesamten Zeitraum
 cat("\n\nTimetable: zentrale Tabelle Fahrplan der Schiffe im gesamten Zeitraum",
       "\n--------------------------------------------------------------------------\n")
 print(Timetable        %>% 
-      group_by(Schiff) %>%
-      summarize(min(Datum),max(Datum), NrTours = n())
+      group_by(Schiff, TourNr) %>%
+      summarize(min(Datum),max(Datum), NrDays = n()) %>%
+      summarize(NrTours = n(), NrDays=sum(NrDays))
+        
 )
 
 # zentrale Tabelle Fahrplan der Schiffe im Analyse Zeitraum 2015 - 2017
@@ -23,7 +33,7 @@ cat("\n\nTimetable: zentrale Tabelle Fahrplan der Schiffe im Analyse Zeitraum 20
 print(Timetable                                                   %>% 
       dplyr::filter(Datum >= "2015-01-01" & Datum < "2018-01-01") %>% 
       group_by(Schiff)                                            %>% 
-      summarize(min(Datum),max(Datum), NrTours = n())
+      summarize(min(Datum),max(Datum), NrDays = n())
 )
 
 
@@ -91,19 +101,6 @@ Regions <- tribble(~Region,                       ~lng, ~lat,
                    "Kanaren",                  -20.0,   28.5)
 
 #-------------------------------------------------------
-# Regions
-#-------------------------------------------------------
-ggmap(map.Welt) +
-  geom_point(data = Ports,
-             mapping = aes(x = lng, y = lat), color = "skyblue3") +
-  geom_text(
-    data = Regions,
-    mapping = aes(x = lng, y = lat, label = Region),
-    size = 4 ) + 
-  geom_polygon(aes(long, lat, group = group, fill = region), data = regions, alpha = 1/3) + 
-  theme(legend.position="none")
-  
-#-------------------------------------------------------
 # Ports - worldwide
 #-------------------------------------------------------
 ggmap(map.Welt) +
@@ -125,6 +122,29 @@ ggmap(map.Welt) +
     legend.position  = "top",
     legend.direction = "horizontal")
 
+#-------------------------------------------------------
+# Regions
+#-------------------------------------------------------
+gg.region <- ggmap(map.Welt) +
+  geom_point(data = Ports,
+             mapping = aes(x = lng, y = lat), color = "skyblue3") + 
+  geom_polygon(aes(long, lat, group = group, fill = region), data = regions, alpha = 1/3) +
+  geom_text(
+    data = Regions,
+    mapping = aes(x = lng, y = lat, label = Region),
+    hjust = 0, nudge_x = 5,
+    size  = 4 )
+
+ds.tmp <- ds.infect.codes.region.nr %>%
+  group_by(Region) %>%
+  summarize(Anzahl = sum(Anzahl)) %>%
+  left_join(Regions, by="Region")
+
+gg.region +
+  geom_point(data=ds.tmp, mapping=aes(x=lng, y=lat, size=Anzahl), alpha = 1/3) + 
+  scale_size(range=c(4,10)) +
+  theme(legend.position="top")
+  
 #-------------------------------------------------------
 # Summary infect cases / total number of (Passengers plus Crew)
 #-------------------------------------------------------

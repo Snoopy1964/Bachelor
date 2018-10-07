@@ -92,6 +92,7 @@ PaxNr.Schiff.Day %>%
 
 # - Gesamtpassagierzahlen pro Tag (Summe aller Schiffe)
 gg <- PaxNr.Schiff.Day %>% 
+  # dplyr::filter(Datum >= "2015-01-01" & Datum < "2015-07-01") %>%
   group_by(Day, Datum)  %>% 
   summarize(PaxNr = sum(PaxMedian)) %>%
   ggplot(aes(x=Datum, y=PaxNr, ylim=0))
@@ -99,11 +100,12 @@ gg <- PaxNr.Schiff.Day %>%
 gg +
   geom_smooth() +
   geom_line()   +
-  ylim(0, 16000) +
-  geom_rect(aes(xmin = as.Date("2015-01-01"),
-                ymin = 0, 
-                xmax = as.Date("2015-05-23"), 
-                ymax = 16000), fill="blue", alpha=1/10)
+  ylim(0, 16000) 
+# +
+#   geom_rect(aes(xmin = as.Date("2015-01-01"),
+#                 ymin = 0, 
+#                 xmax = as.Date("2015-05-23"), 
+#                 ymax = 16000), fill="blue", transient = TRUE, opacity=1/10)
 
 
 
@@ -153,11 +155,10 @@ ds.infect.codes.ship.nr <- ds.infect.codes  %>%
 # - same grouped by Region
 ds.infect.codes.region.nr <- ds.infect.codes  %>%
   group_by(Region, Code.ID, Code.Titel)     %>%
-  summarize(Anzahl = n())                   %>%
+  summarize(Anzahl = n(), PaxMedian = median(PaxNr + CrewNr))                   %>%
   # calculate relative frequencies per ship
   # (Nr divided by total number of passengers
   # in analysis time period)
-  left_join(PaxNr.Region, by = "Region")    %>%
-  mutate(relFreq = Anzahl / PaxGesamt)
+  mutate(relFreq = Anzahl / PaxMedian)
 
 
