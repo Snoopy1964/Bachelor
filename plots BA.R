@@ -115,7 +115,7 @@ ggmap(map.Welt) +
     size = 4 ) + 
   geom_polygon(aes(long, lat, group = group, fill = region), data = regions, alpha = 1/3) + 
   geom_label_repel(
-    data = ds.dd,
+    data = Ports,
     mapping = aes(x = lng, y = lat, label = `Port Name`),
     size = 2
   ) + 
