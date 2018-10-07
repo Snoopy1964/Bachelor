@@ -58,4 +58,6 @@ if (exists("ds.all")) rm("ds.all")
 if (exists("Cases"))  rm("Cases")
 
 # save data as csv-file
-write.csv2(ds.infect.chapters, file="data/Results/ds.infect.cases.csv", fileEncoding = "UTF-8")
+# write.csv2 is mixing up with , and 1000 separater .
+# write.csv2(ds.infect.chapters, file="data/Results/ds.infect.cases.csv", fileEncoding = "UTF-8")
+write_delim(ds.infect.chapters, "data/Results/ds.infect.cases.csv", delim = ";")

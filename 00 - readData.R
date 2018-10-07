@@ -126,12 +126,12 @@ Timetable <- read_delim(
 )
 
 # Ports 
-Ports <- read_delim("data/Ports.csv",
+Ports <- read_delim("data/Ports-corrected.csv",
                     ";",
                     escape_double = FALSE,
                     trim_ws = TRUE)
 # remove unnessecary columns (like adminName1, fcode, etc.)
-Ports <- Ports %>% select("Port Name", "lng", "lat", "geoName", "countryCode", "countryName")
+Ports <- Ports %>% select("Port Name", "lng", "lat", "geoName", "countryCode", "countryName", "Region")
 
 # Touren (inkl. Passagierzahlen)
 ToursPax <- read_delim(
@@ -167,10 +167,10 @@ ds.all <- Cases %>%
   #  - Join der GeoInformationen
   left_join(Ports, by="Port Name")                     %>%
   #  - Join der Route und der Region, sowie der Passagierzahlen (Pax)
-  left_join(select(ToursPax, -Year), by=c("TourNr", "Schiff"))        %>%
+  left_join(select(ToursPax, -Year, -Region), by=c("TourNr", "Schiff"))        %>%
   #  - Join der Crew-Zahlen, abgeschätzt durch max. Capa bei Vollbesetzung
   left_join(select(Ships,"Schiff","CrewNr"),by="Schiff")    %>%
-  #  - Berechne die GEsamtanzahl der Personen an Board (TotalNr)
+  #  - Berechne die Gesamtanzahl der Personen an Board (TotalNr)
   mutate(TotalNr = PaxNr + CrewNr)
 
 ##########################################################################################

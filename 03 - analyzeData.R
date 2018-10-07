@@ -73,15 +73,43 @@ print(
     )
 )
 
-# - Gesamtanzahl Passagiere/Schiff im Analyse Zeitraum
+# - Gesamtanzahl/durchschnittliche Anzahl Passagiere/Schiff im Analysezeitraum
 PaxNr.Schiff <- ToursPax %>% 
-  filter(EndDate >= "2015-01-01" & StartDate <= "2017-12-31") %>% 
-  group_by(Schiff) %>% 
-  summarize(PaxGesamt = sum(PaxNr))
+  dplyr::filter(EndDate >= "2015-01-01" & StartDate <= "2017-12-31") %>% 
+  group_by(Schiff) %>%  
+  summarize(PaxGesamt = sum(PaxNr), PaxMean = mean(PaxNr), PaxMedian = median(PaxNr), PaxMad = mad(PaxNr)) %>% 
+  left_join(select(Ships, "Schiff", "MaxPaxNr", "CrewNr"), by="Schiff")
 
-# - Gesamtanzahl Passagiere/Region im Analyse Zeitraum
+# - Passagierzahlen/Tag/Schiff im Analysezeitraum
+PaxNr.Schiff.Day <- ds.loc %>% 
+  group_by(Datum, Day, Schiff) %>% 
+  summarize(Anzahl = n(), PaxMedian = median(PaxNr)) 
+
+PaxNr.Schiff.Day %>%
+  ggplot(aes(x=Datum, y=PaxMedian, group=Schiff, color=Schiff)) + 
+  geom_line() +
+  facet_wrap(~ Schiff, ncol = 1)
+
+# - Gesamtpassagierzahlen pro Tag (Summe aller Schiffe)
+gg <- PaxNr.Schiff.Day %>% 
+  group_by(Day, Datum)  %>% 
+  summarize(PaxNr = sum(PaxMedian)) %>%
+  ggplot(aes(x=Datum, y=PaxNr, ylim=0))
+
+gg +
+  geom_smooth() +
+  geom_line()   +
+  ylim(0, 16000) +
+  geom_rect(aes(xmin = as.Date("2015-01-01"),
+                ymin = 0, 
+                xmax = as.Date("2015-05-23"), 
+                ymax = 16000), fill="blue", alpha=1/10)
+
+
+
+# - Gesamtanzahl Passagiere/Region im Analysezeitraum
 PaxNr.Region <- ToursPax %>% 
-  filter(EndDate >= "2015-01-01" & StartDate <= "2017-12-31") %>% 
+  dplyr::filter(EndDate >= "2015-01-01" & StartDate <= "2017-12-31") %>% 
   group_by(Region) %>% 
   summarize(PaxGesamt = sum(PaxNr))
 

@@ -37,7 +37,7 @@ Regions <- Regions[!is.na(Regions)]
 for (r in Regions) {
   print(r)
   print(
-    ggmap(world.map) +
+    ggmap(map.Welt) +
       geom_point(
         data = ds.loc %>% dplyr::filter(Region == r),
         aes(x = lng, y = lat),
@@ -47,3 +47,28 @@ for (r in Regions) {
       ggtitle(r)
   )
 }
+
+#--------------------------------------------------------------------
+#-------------------------------------------------------
+# Ports - worldwide
+#-------------------------------------------------------
+ds.dd <- dplyr::filter(Ports.Region, Region == "Asien")
+# ggmap(map.Mittelmeer) +
+ggmap(map.Welt) +
+  geom_point(data = ds.dd,
+             mapping = aes(x = lng, y = lat)) +
+  geom_text(
+    data = Regions,
+    mapping = aes(x = lng, y = lat, label = Region),
+    size = 4 ) + 
+  geom_polygon(aes(long, lat, group = group, fill = region), data = regions, alpha = 1/3) + 
+  geom_label_repel(
+    data = ds.dd,
+    mapping = aes(x = lng, y = lat, label = `Port Name`),
+    size = 2
+  ) + 
+  geom_polygon(aes(long, lat, group = group, fill = region), data = regions, alpha = 1/3) + 
+  scale_fill_discrete(name="Region") +
+  theme(#legend.title     = element_text("ICD10 Code"),
+    legend.position  = "top",
+    legend.direction = "horizontal")

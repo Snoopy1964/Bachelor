@@ -96,7 +96,6 @@ Regions <- tribble(~Region,                       ~lng, ~lat,
 ggmap(map.Welt) +
   geom_point(data = Ports,
              mapping = aes(x = lng, y = lat), color = "skyblue3") +
-#  geom_label_repel(
   geom_text(
     data = Regions,
     mapping = aes(x = lng, y = lat, label = Region),
@@ -110,9 +109,14 @@ ggmap(map.Welt) +
 ggmap(map.Welt) +
   geom_point(data = Ports,
              mapping = aes(x = lng, y = lat)) +
+  geom_text(
+    data = Regions,
+    mapping = aes(x = lng, y = lat, label = Region),
+    size = 4 ) + 
+  geom_polygon(aes(long, lat, group = group, fill = region), data = regions, alpha = 1/3) + 
   geom_label_repel(
-    data = Ports,
-    mapping = aes(x = lng, y = lat, label = geoName),
+    data = ds.dd,
+    mapping = aes(x = lng, y = lat, label = `Port Name`),
     size = 2
   ) + 
   geom_polygon(aes(long, lat, group = group, fill = region), data = regions, alpha = 1/3) + 
