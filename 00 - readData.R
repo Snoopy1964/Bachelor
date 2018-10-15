@@ -76,7 +76,7 @@ Ships <- tribble(~Schiff, ~CrewNr, ~MaxPaxNr, ~ComissioningYear, ~Decommisioning
 #--------------------------------
 # Load maps
 #
-source("97 - loadLocalMaps.R")
+source("97 - loadLocalMaps.R", encoding = "UTF-8")
 
 
 ##########################################################################################
