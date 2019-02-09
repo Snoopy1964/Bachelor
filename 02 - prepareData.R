@@ -49,10 +49,13 @@ infect.codes <- c(
   "B01", # (Varizellen)
   "B02", # (zoster)
   "J11", # (Grippe)
-  "A16", # (Tuberkulose)
-  "J00", # (Akute Rhinopharyngitis [Erkältungsschnupfen])
-  "J06", # (Akute Infektionen an mehreren oder nicht näher bezeichneten Lokalisationen der oberen Atemwege)
-  "J40"  # (Bronchitis, nicht als akut oder chronisch bezeichnet)
+  "A16"  # (Tuberkulose)
+  #----------------------------------------------------------------------
+  # 2019.02.09 - rausgenommen, da sonst zu viel Daten für Bachelor Arbeit
+  #----------------------------------------------------------------------
+  # "J00", # (Akute Rhinopharyngitis [Erkältungsschnupfen])
+  # "J06", # (Akute Infektionen an mehreren oder nicht näher bezeichneten Lokalisationen der oberen Atemwege)
+  # "J40"  # (Bronchitis, nicht als akut oder chronisch bezeichnet)
 )
 
 ds.infect.codes <- ds.loc %>% dplyr::filter(Code.ID %in% infect.codes )
