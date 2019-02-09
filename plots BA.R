@@ -88,16 +88,28 @@ gg.region <- ggmap(map.Welt) +
     hjust = 0, nudge_x = 5,
     size  = 4 )
 
-ds.tmp <- ds.infect.codes.region.nr %>%
+ds.tmp <- ds.infect.codes.ship.region %>%
   group_by(Region) %>%
-  summarize(Anzahl = sum(Anzahl)) %>%
-  left_join(Regions, by="Region")
+  summarize(
+    Anzahl = sum(Anzahl),
+    PaxNr  = sum(PaxNr)
+  )
 
 gg.region +
-  geom_point(data=ds.tmp, mapping=aes(x=lng, y=lat, size=Anzahl), alpha = 1/3) + 
+  geom_point(data=ds.tmp, mapping=aes(x=lng, y=lat, size=Anzahl), alpha = 1/3) +
   scale_size(range=c(4,10)) +
   theme(legend.position="top")
-  
+
+# ds.tmp <- ds.infect.codes.region.nr %>%
+#   group_by(Region) %>%
+#   summarize(Anzahl = sum(Anzahl)) %>%
+#   left_join(Regions, by="Region")
+# 
+# gg.region +
+#   geom_point(data=ds.tmp, mapping=aes(x=lng, y=lat, size=Anzahl), alpha = 1/3) + 
+#   scale_size(range=c(4,10)) +
+#   theme(legend.position="top")
+
 #-------------------------------------------------------
 # Summary infect cases / total number of (Passengers plus Crew)
 #-------------------------------------------------------
