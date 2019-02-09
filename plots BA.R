@@ -92,7 +92,9 @@ ds.tmp <- ds.infect.codes.ship.region %>%
   group_by(Region) %>%
   summarize(
     Anzahl = sum(Anzahl),
-    PaxNr  = sum(PaxNr)
+    PaxNr  = sum(PaxNr),
+    lng    = unique(lng),
+    lat    = unique(lat)
   )
 
 gg.region +
@@ -166,7 +168,7 @@ ggmap(map.Welt) +
   ggtitle(str_c("Disease Map ","Infektionskrankheiten II")) + 
   facet_grid( Code.ID ~ . )                    +
   theme(#legend.title     = "ICD10 Code",
-        legend.position  = "bottom",
+        legend.position  = "right",
         legend.direction = "vertical")
 
 #-------------------------------------------------------
@@ -216,7 +218,7 @@ ggplot(ds.infect.codes.high, aes(x = Datum, colour = Code.Titel)) +
 
 # Codes with low frequency
 ds.infect.codes.low <- ds.infect.codes %>%
-  dplyr::filter(Code.ID %in% c("A16", "B01", "B02"))
+  dplyr::filter(Code.ID %in% c("A16", "B01", "B02", "J11"))
 
 ggds <- ggplot(ds.infect.codes.low, aes(x = Datum, fill = Code.Titel)) +
   geom_histogram(position = 'identity', alpha = 1, binwidth = 7) +

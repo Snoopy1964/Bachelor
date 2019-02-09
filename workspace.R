@@ -3,16 +3,16 @@
 #---------------------------------------------------------------------------
 ds.port.inc <- ds.infect.chapters %>% group_by(`Port Name`) %>% summarise(Nr=n()) %>% left_join(Ports,by="Port Name")
 
-ggplot() + 
-  geom_polygon(data=map_data("world"), 
-               aes(x=long, y=lat, group=group), fill="grey80") + 
-  geom_point(data=ds.port.inc,
-             aes(x=lng, y=lat, size = Nr ), alpha=1/3) +
-  guides(size=guide_legend("Anzahl Infektionen")) + 
-  scale_size_continuous(breaks=c(10,100, 200, 300, 400, 500, 600, 700, 800, 900, 1000), range = c(1, 10)) +
-  xlim(-150,120) +
-  ylim(-20,80)
-# same plot with ggmap and google map
+# ggplot() + 
+#   geom_polygon(data=map_data("world"), 
+#                aes(x=long, y=lat, group=group), fill="grey80") + 
+#   geom_point(data=ds.port.inc,
+#              aes(x=lng, y=lat, size = Nr ), alpha=1/3) +
+#   guides(size=guide_legend("Anzahl Infektionen")) + 
+#   scale_size_continuous(breaks=c(10,100, 200, 300, 400, 500, 600, 700, 800, 900, 1000), range = c(1, 10)) +
+#   xlim(-150,120) +
+#   ylim(-20,80)
+# # same plot with ggmap and google map
 world.map <- get_googlemap(
   center = c(lon = 15, lat = 52),
   zoom = 2,

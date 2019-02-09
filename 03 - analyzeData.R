@@ -93,10 +93,12 @@ x.Axis.Label <- ifelse(str_length(icd10.chapters[["Kapitel.Titel"]]) >= 56,
 
 
 # - Passagierzahlen pro Tag (PersonenTage)
-PaxNr.Ship.Day <- select(Timetable, Datum, Schiff, TourNr, `Port Name`, LocDesc) %>% 
+PersonNr.Ship.Day <- select(Timetable, Datum, Schiff, TourNr, `Port Name`, LocDesc) %>% 
   dplyr::filter(Datum >= "2015-01-01" & Datum < "2018-01-01")                    %>%
   left_join(select(ToursPax, TourNr, DurationDays, Route, PaxNr), by="TourNr")   %>%
   left_join(select(Ports, `Port Name`, Region), by="Port Name")                  %>%
+  # Crew Zahlen aus Ships
+  left_join(select(Ships, Schiff, CrewNr), by="Schiff")                          %>%
   # berechne die fortlaufende Anzahl der Tage, der Wochen und der Monate ab dem 1.1.2015
   mutate( Year  = year(Datum), 
           Month = (year(Datum) - year(min(Datum)))*12 + month(Datum),
@@ -105,18 +107,18 @@ PaxNr.Ship.Day <- select(Timetable, Datum, Schiff, TourNr, `Port Name`, LocDesc)
   )
 
 # - Passagierzahlen pro Woche, aus PersonDays
-PaxNr.Ship.Week <- PaxNr.Ship.Day %>% 
+PaxNr.Ship.Week <- PersonNr.Ship.Day %>% 
   group_by(Schiff, Week) %>% 
   summarise(PaxNr = sum(PaxNr)/n(), nr.Days = n())
 
 # - Passagierzahlen pro Monat, aus PersonDays
-PaxNr.Ship.Month <- PaxNr.Ship.Day %>% 
+PaxNr.Ship.Month <- PersonNr.Ship.Day %>% 
   group_by(Schiff, Month) %>% 
   summarise(PaxNr = sum(PaxNr)/n(), nr.Days = n())
 
 # - Passagierzahlen pro Shiff über den gesamten Analysezeitraum
 #   Hier muss beachtet werden, dass z.B. die MS6 erst im April 2017 in DIest gestellt wurde
-PaxNr.Ship <- PaxNr.Ship.Day %>% 
+PaxNr.Ship <- PersonNr.Ship.Day %>% 
   group_by(Schiff) %>% 
   summarise(PaxNr = sum(PaxNr)/n(), nr.Days = n())
 
@@ -126,15 +128,16 @@ PaxNr.Ship.Month %>%
   facet_wrap(~ Schiff, ncol = 2)
 
 # - Gesamtpassagierzahlen pro Tag (Summe aller Schiffe)
-gg <- PaxNr.Ship.Day %>% 
+gg <- PersonNr.Ship.Day %>% 
   # dplyr::filter(Datum >= "2015-01-01" & Datum < "2015-07-01") %>%
   group_by(Day, Datum)  %>% 
-  summarize(PaxNr = sum(PaxNr)) %>%
-  ggplot(aes(x=Datum, y=PaxNr, ylim=0))
+  summarize(PaxNr = sum(PaxNr), CrewNr = sum(CrewNr)) %>%
+  ggplot()
 
 gg +
-  geom_smooth() +
-  geom_line()   +
+  geom_smooth(aes(x=Datum, y=PaxNr)) +
+  geom_line(aes(x=Datum, y=PaxNr, color="black"))   +
+  geom_line(aes(x=Datum, y=CrewNr, color="red")) +
   ylim(0, 16000) 
 # +
 #   geom_rect(aes(xmin = as.Date("2015-01-01"),
@@ -145,7 +148,7 @@ gg +
 
 
 # - Gesamtanzahl Passagiere/Region im Analysezeitraum
-PaxNr.Region.Ship <- PaxNr.Ship.Day %>% 
+PaxNr.Region.Ship <- PersonNr.Ship.Day %>% 
   group_by(Region, Schiff) %>% 
   summarize(PaxNr = sum(PaxNr)/n(), nr.Days = n())
 
@@ -209,3 +212,4 @@ ds.infect.codes.ship.region <- ds.infect.codes           %>%
     select(Ships, Schiff, CrewNr, MaxPaxNr), 
     by="Schiff"
   )
+
