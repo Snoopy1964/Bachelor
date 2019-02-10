@@ -20,13 +20,13 @@
 # grouped by chapters
 #------------------------------------------------------------------------
 
-ds.loc.nr <- ds.loc                   %>% 
+cases.nr <- cases                     %>% 
   group_by(Kapitel.ID, Kapitel.Titel) %>% 
   summarise(Anzahl = n())             %>% 
   arrange(desc(Anzahl))
 
 # - plotte die Verteilung der icd10-Kapitel (ranked nach Anzahl)
-ggds.loc <- ggplot(ds.loc.nr)
+gg.cases <- ggplot(cases.nr)
 
 # Verkürze die Titel der x-Achsen (hier bei y, da coord_flip())
 x.Axis       <- icd10.chapters[["Kapitel.Titel"]]
@@ -35,7 +35,7 @@ x.Axis.Label <- ifelse(str_length(icd10.chapters[["Kapitel.Titel"]]) >= 56,
                        str_c(icd10.chapters[["Kapitel.Titel"]]))
 
 # print(
-  ggds.loc +
+  gg.cases +
     geom_bar(
       mapping = aes(x = reorder(Kapitel.Titel, Anzahl), 
                     y = Anzahl
@@ -56,7 +56,7 @@ x.Axis.Label <- ifelse(str_length(icd10.chapters[["Kapitel.Titel"]]) >= 56,
 
 
 #print(
-  ggds.loc +
+  gg.cases +
     geom_bar(
       mapping = aes(x = reorder(Kapitel.Titel,-Anzahl), 
                     y = Anzahl
@@ -78,57 +78,34 @@ x.Axis.Label <- ifelse(str_length(icd10.chapters[["Kapitel.Titel"]]) >= 56,
     )
 # )
 
-# # - Gesamtanzahl/durchschnittliche Anzahl Passagiere/Schiff im Analysezeitraum
-# PaxNr.Schiff <- ToursPax %>% 
-#   dplyr::filter(EndDate >= "2015-01-01" & StartDate <= "2017-12-31") %>% 
-#   group_by(Schiff) %>%  
-#   summarize(PaxGesamt = sum(PaxNr), PaxMean = mean(PaxNr), PaxMedian = median(PaxNr), PaxMad = mad(PaxNr)) %>% 
-#   left_join(select(Ships, "Schiff", "MaxPaxNr", "CrewNr"), by="Schiff")
-# 
-# # - Passagierzahlen/Tag/Schiff im Analysezeitraum
-# PaxNr.Schiff.Day <- ds.loc %>% 
-#   group_by(Datum, Day, Schiff) %>% 
-#   summarize(Anzahl.Infects = n(), PaxNr = unique(PaxNr), PaxNr = PaxNr) %>%
-#   mutate(Rate.Infects = Anzahl.Infects / PaxNr)
-
-
-# - Passagierzahlen pro Tag (PersonenTage)
-PersonNr.Ship.Day <- select(Timetable, Datum, Schiff, TourNr, `Port Name`, LocDesc) %>% 
-  dplyr::filter(Datum >= "2015-01-01" & Datum < "2018-01-01")                    %>%
-  left_join(select(ToursPax, TourNr, DurationDays, Route, PaxNr), by="TourNr")   %>%
-  left_join(select(Ports, `Port Name`, Region), by="Port Name")                  %>%
-  # Crew Zahlen aus Ships
-  left_join(select(Ships, Schiff, CrewNr), by="Schiff")                          %>%
-  # berechne die fortlaufende Anzahl der Tage, der Wochen und der Monate ab dem 1.1.2015
-  mutate( Year  = year(Datum), 
-          Month = (year(Datum) - year(min(Datum)))*12 + month(Datum),
-          Day   = as.numeric(Datum - min(Datum)) + 1,
-          Week  = trunc(Day/7) + 1
-  )
-
+# Passagier-, Crew- und Personenanzahl pro Tag (Personen Tage), aus timetable.day
+personNr.ship.day <- select(timetable.day, Datum, Schiff, Region, PaxNr, CrewNr, PersNr, Year, Month, Day, Week)
+  
 # - Passagierzahlen pro Woche, aus PersonDays
-PaxNr.Ship.Week <- PersonNr.Ship.Day %>% 
+paxNr.ship.week <- personNr.ship.day %>% 
   group_by(Schiff, Week) %>% 
-  summarise(PaxNr = sum(PaxNr)/n(), nr.Days = n())
+  summarise(PaxNr = sum(PaxNr), nr.Days = n())
 
 # - Passagierzahlen pro Monat, aus PersonDays
-PaxNr.Ship.Month <- PersonNr.Ship.Day %>% 
+paxNr.ship.month <- personNr.ship.day %>% 
   group_by(Schiff, Month) %>% 
-  summarise(PaxNr = sum(PaxNr)/n(), nr.Days = n())
+  summarise(PaxNr = sum(PaxNr), nr.Days = n())
 
 # - Passagierzahlen pro Shiff über den gesamten Analysezeitraum
 #   Hier muss beachtet werden, dass z.B. die MS6 erst im April 2017 in DIest gestellt wurde
-PaxNr.Ship <- PersonNr.Ship.Day %>% 
+paxNr.ship <- personNr.ship.day %>% 
   group_by(Schiff) %>% 
   summarise(PaxNr = sum(PaxNr)/n(), nr.Days = n())
 
-PaxNr.Ship.Month %>%
+paxNr.ship.month %>%
   ggplot(aes(x=Month, y=PaxNr, group=Schiff, color=Schiff)) + 
   geom_line() +
   facet_wrap(~ Schiff, ncol = 2)
 
+
+
 # - Gesamtpassagierzahlen pro Tag (Summe aller Schiffe)
-gg <- PersonNr.Ship.Day %>% 
+gg <- personNr.ship.day %>% 
   # dplyr::filter(Datum >= "2015-01-01" & Datum < "2015-07-01") %>%
   group_by(Day, Datum)  %>% 
   summarize(PaxNr = sum(PaxNr), CrewNr = sum(CrewNr)) %>%
@@ -148,9 +125,9 @@ gg +
 
 
 # - Gesamtanzahl Passagiere/Region im Analysezeitraum
-PaxNr.Region.Ship <- PersonNr.Ship.Day %>% 
+paxNr.region.ship <- personNr.ship.day %>% 
   group_by(Region, Schiff) %>% 
-  summarize(PaxNr = sum(PaxNr)/n(), nr.Days = n())
+  summarize(PaxNr = sum(PaxNr)/n(), CrewNr=mean(CrewNr), nr.Days = n())
 
 #-----------------------------------------------------------------
 # Overview frequencies all Cases grouped by infect groups
@@ -158,12 +135,12 @@ PaxNr.Region.Ship <- PersonNr.Ship.Day %>%
 # - time period: [2015-01-01, 2017-12-31]
 #-----------------------------------------------------------------
 
-ds.infect.chapters.nr <- ds.infect.chapters  %>% 
+cases.infect.chapters.nr <- cases.infect.chapters  %>% 
   group_by(Gruppen.ID, Gruppen.Titel)        %>% 
   summarise(Anzahl = n())                    %>% 
   arrange(desc(Anzahl))
 
-ds.infect.groups.nr <- ds.infect.chapters  %>% 
+cases.infect.groups.nr <- cases.infect.chapters  %>% 
   group_by(Code.ID, Code.Titel)        %>% 
   summarise(Anzahl = n())                    %>% 
   arrange(desc(Anzahl))
@@ -174,13 +151,13 @@ ds.infect.groups.nr <- ds.infect.chapters  %>%
 # - time period: [2015-01-01, 2017-12-31]
 #-----------------------------------------------------------------
 
-ds.infect.codes.nr <- ds.infect.codes       %>% 
+cases.infect.codes.nr <- cases.infect.codes       %>% 
   group_by(Code.ID, Code.Titel)             %>% 
   summarise(Anzahl = n())                   %>% 
   arrange(desc(Anzahl))
 
 # - same grouped by ships
-ds.infect.codes.ship.nr <- ds.infect.codes  %>%
+cases.infect.codes.ship.nr <- cases.infect.codes  %>%
   group_by(Schiff, Code.ID, Code.Titel)     %>%
   summarize(Anzahl = n())                   %>%
   # calculate relative frequencies per ship
@@ -190,7 +167,7 @@ ds.infect.codes.ship.nr <- ds.infect.codes  %>%
   mutate(relFreq = Anzahl / PaxNr)
 
 # - same grouped by Region
-ds.infect.codes.region.nr <- ds.infect.codes  %>%
+cases.infect.codes.region.nr <- cases.infect.codes  %>%
   group_by(Region, Code.ID, Code.Titel)       %>%
   summarize(Anzahl = n())                     %>%
   left_join(
@@ -203,13 +180,16 @@ ds.infect.codes.region.nr <- ds.infect.codes  %>%
   mutate(relFreq = Anzahl / PaxNr)
 
 # Anzahl der Infect Codes pro Shiff, pro Region (inkl. lon/lat) 
-ds.infect.codes.ship.region <- ds.infect.codes           %>%
-  group_by(Code.ID, Region, Schiff, PaxStatus)           %>%
-  summarize(Anzahl = n())                                %>%
-  left_join(PaxNr.Region.Ship, by=c("Region", "Schiff")) %>%
-  left_join(Regions, by="Region")                        %>%
+cases.infect.codes.ship.region <- cases.infect.codes             %>%
+  group_by(Code.ID, Region, Schiff, PaxStatus, Geschlecht) %>%
+  summarize(Anzahl = n())                                  %>%
+  left_join(PaxNr.Region.Ship, by=c("Region", "Schiff"))   %>%
+  left_join(Regions, by="Region")                          %>%
   left_join(
     select(Ships, Schiff, CrewNr, MaxPaxNr), 
-    by="Schiff"
-  )
+    by=c("Schiff","CrewNr")
+  )                                                        %>%
+  mutate(relFreq.mc=)
+
+# Anzahl der Infec
 

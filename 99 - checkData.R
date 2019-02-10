@@ -1,7 +1,7 @@
 ##############################################################################
 #
-# check data set ds.loc
-# ("00 - readData.R" muss ausgeführt worden sein) -> ds.loc
+# check data set cases
+# ("00 - readData.R" muss ausgeführt worden sein) -> cases
 #
 # (1) Checke Zeilen auf nicht gültige (NA) Einträge 
 #
@@ -15,15 +15,15 @@
 ##############################################################################
 
 # (1) Checke Zeilen auf nicht gültige (NA) Einträge 
-View(ds.loc.na <- ds.loc[!complete.cases(ds.loc),])
+View(cases.na <- cases[!complete.cases(cases),])
 
 cat("\n\nkeine Klassifizierung nach ICD10-WHO möglich, aber nach ICD10-GM teilweise!\n")
 print(
-  ds.all %>% group_by(Code.ID, Code.Titel) %>% dplyr::filter(is.na(Gruppen.ID)) %>% summarize("Anzahl NAs" = n())
+  cases %>% group_by(Code.ID, Code.Titel) %>% dplyr::filter(is.na(Gruppen.ID)) %>% summarize("Anzahl NAs" = n())
 )
 
 # (2) checke Regionen durch plots der Häfen mit Selektion auf Region
-Regions <- unique(ds.loc[["Region"]])
+Regions <- unique(cases[["Region"]])
 
 # temp -> ToDo
 Regions <- Regions[!is.na(Regions)]

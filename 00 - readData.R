@@ -22,7 +22,7 @@
 # - Top Ten der selektierten Infektionskrankheiten (Kapitel I und X)
 # - sampled.codes.infect (nur für selektierte Krankheiten)
 # - Unterscheidung Gast/Crew inkl. Altersverteilung und Geschlecht
-# - Krankheitsfälle pro Tour pro Schiff
+# - Krankheitsfälle pro Region pro Schiff
 #
 # Regionale Betrachtung (Häfen)
 # - pro code 1 desease map
@@ -32,23 +32,26 @@
 #
 #------------------------------------------------------------------------
 # Read Data
-# (1) Bilde DB der ICD10 codes (WHO) 2016 von
-#     www.dimdi.de (deutsche Version)  -> "01 - readICD10.R"
+# (1) Bilde DB der ICD10 codes (WHO GM) 2018 von
+#     www.dimdi.de (deutsche Version)  -> "01 - readICD10-GM-2018.R"
+#
 # (2) Einlesen der Daten
 #     - Cases (incidents)              aus File "data/Cases.csv" 
 #     - Schiffsfahrplan                aus File "Timetable.csv
 #     - Ports                          aus File "Ports.csv"
 #     - Touren (inkl. Passagierzahlen) aus File "ToursPax.csv"
-# (3) Verknüpfen der Cases mit Daten aus den Files zu einem Datensatz "ds.all"
+#
+# (3) Verknüpfen der Cases mit Daten mit ICD10 codes zu einem Datensatz "cases"
 #     - Join von ICD10 Chapters, Groups und Codes (nur 3 digit codes!)
-#     - Join von Port und Tour Number zu "ds.all"
+#     - filtere alle Daten ohne GeoInformation (longitude, latitude) heraus,
+#       da die Arbeit sich auf regionale Infektionsrisiken beschränkt
+#
+# (4) Verknüpfe GeoDaten, Passagierzahlen etc. zu Schiffsfahrplan (Timetable)
+#     (Wo befindet sich welches Schiff an welchem Tag in welcher Region)
+#     - Join von Port und Tour Number zu "Timetable"
 #     - Join der GeoInformationen
 #     - Join der Route und der Region, sowie der Passagierzahlen (Pax)
 #     - Join der Crew-Zahlen, abgeschätzt durch max. Capa bei Vollbesetzung
-#
-# (4) filtere alle Daten ohne GeoInformation (longitude, latitude) heraus,
-#     da die Arbeit sich auf regionale Infektionsrisiken beschränkt
-#
 #
 #--------------------------------
 # Crew Zahlen pro Schiff
@@ -104,7 +107,7 @@ source('01 - readICD10-GM-2018.R')
 ##########################################################################################
 
 # Cases (incidents) 
-Cases <- read_delim("data/Cases.csv",";", 
+Cases.raw <- read_delim("data/Cases.csv",";", 
                     escape_double = FALSE, 
                     col_types = cols(
                       Datum = col_date(format = "%Y-%m-%d"),
@@ -113,7 +116,7 @@ Cases <- read_delim("data/Cases.csv",";",
                     trim_ws = TRUE)
 
 # Schiffsfahrplan
-Timetable <- read_delim(
+Timetable.raw <- read_delim(
   "data/Timetable.csv",
   ";",
   escape_double = FALSE,
@@ -151,38 +154,76 @@ ToursPax <- select(ToursPax, -Region)
 
 ##########################################################################################
 #
-# (3) Verknüpfen der Cases mit Daten aus den Files zu einem Datensatz "ds.all"
+# (3) Verknüpfen der Cases mit Daten aus den Files zu einem Datensatz "cases"
 #     - Join von ICD10 Chapters, Groups und Codes (nur 3 digit codes!)
-#     - Join von Port und Tour Number 
+#     - filtere alle Daten im Analysezeitraum 01.01.2015 - 31.12.2017
+#
+##########################################################################################
+
+cases <- Cases.raw %>%
+  #     - Konvertiere ICD10 zum 3 digit code von icd10.codes
+  mutate(Code.ID = str_sub(ICD10, start=1, end=3))     %>%
+  #  - Join von ICD10 Chapters, Groups und Codes (nur 3 digit codes!)
+  left_join(icd10.codes, by=c("Code.ID"))              %>%
+  # filtere alle Daten im Analysezeitraum 01.01.2015 - 31.12.2017
+  dplyr::filter(Datum >= "2015-01-01" & Datum < "2018-01-01")
+
+
+# ds.all.old <- Cases %>%
+#   #     - Konvertiere ICD10 zum 3 digit code von icd10.codes
+#   mutate(Code.ID = str_sub(ICD10, start=1, end=3))     %>%
+#   #  - Join von ICD10 Chapters, Groups und Codes (nur 3 digit codes!)
+#   left_join(icd10.codes, by=c("Code.ID"))              %>%
+#   #  - Join von Port und Tour Number
+#   left_join(Timetable[,c("Datum", "Schiff", "TourNr", "Port Name")], by=c("Datum", "Schiff")) %>%
+#   #  - Join der GeoInformationen
+#   left_join(Ports, by="Port Name")                     %>%
+#   #  - Join der Route und der Region, sowie der Passagierzahlen (Pax)
+#   # left_join(select(ToursPax, -Year, -Region), by=c("TourNr", "Schiff"))        %>%
+#   left_join(select(ToursPax, -Year), by=c("TourNr", "Schiff"))        %>%
+#   #  - Join der Crew-Zahlen, abgeschätzt durch max. Capa bei Vollbesetzung
+#   left_join(select(Ships,"Schiff","CrewNr"),by="Schiff")    %>%
+#   #  - Berechne die Gesamtanzahl der Personen an Board (TotalNr)
+#   mutate(TotalNr = PaxNr + CrewNr)
+
+##########################################################################################
+#
+# (4) Verknüpfe GeoDaten, Passagierzahlen etc. zu Schiffsfahrplan (Timetable)
+#     (Wo befindet sich welches Schiff an welchem Tag in welcher Region)
+#     - Join von Port und Tour Number zu "Timetable"
 #     - Join der GeoInformationen
 #     - Join der Route und der Region, sowie der Passagierzahlen (Pax)
 #     - Join der Crew-Zahlen, abgeschätzt durch max. Capa bei Vollbesetzung
 #
 ##########################################################################################
 
-ds.all <- Cases %>%
-  #     - Konvertiere ICD10 zum 3 digit code von icd10.codes
-  mutate(Code.ID = str_sub(ICD10, start=1, end=3))     %>%
-  #  - Join von ICD10 Chapters, Groups und Codes (nur 3 digit codes!)
-  left_join(icd10.codes, by=c("Code.ID"))              %>%
-  #  - Join von Port und Tour Number
-  left_join(Timetable[,c("Datum", "Schiff", "TourNr", "Port Name")], by=c("Datum", "Schiff")) %>%
-  #  - Join der GeoInformationen
-  left_join(Ports, by="Port Name")                     %>%
-  #  - Join der Route und der Region, sowie der Passagierzahlen (Pax)
-  # left_join(select(ToursPax, -Year, -Region), by=c("TourNr", "Schiff"))        %>%
-  left_join(select(ToursPax, -Year), by=c("TourNr", "Schiff"))        %>%
-  #  - Join der Crew-Zahlen, abgeschätzt durch max. Capa bei Vollbesetzung
-  left_join(select(Ships,"Schiff","CrewNr"),by="Schiff")    %>%
-  #  - Berechne die Gesamtanzahl der Personen an Board (TotalNr)
-  mutate(TotalNr = PaxNr + CrewNr)
+
+# - Passagierzahlen pro Tag (PersonenTage)
+timetable.day <- select(Timetable.raw, Datum, Schiff, TourNr, `Port Name`, LocDesc) %>% 
+  dplyr::filter(Datum >= "2015-01-01" & Datum < "2018-01-01")                       %>%
+  left_join(select(Ports, `Port Name`, lng, lat, Region), by="Port Name")           %>%
+  left_join(select(ToursPax, TourNr, PaxNr), by="TourNr")                           %>%
+  # Crew Zahlen aus Ships
+  left_join(select(Ships, Schiff, CrewNr), by="Schiff")                             %>%
+  # Berechne die Gesamtanzahl der Personen an Board (PersNr)
+  mutate(PersNr = PaxNr + CrewNr)                                                   %>%
+  # sortiere Spalten
+  select(Datum, Schiff, Region, `Port Name`, lng, lat, PaxNr, CrewNr,PersNr)        %>%
+  # berechne die fortlaufende Anzahl der Tage, der Wochen und der Monate ab dem 1.1.2015
+  mutate( Year  = year(Datum), 
+          Month = (year(Datum) - year(min(Datum)))*12 + month(Datum),
+          Day   = as.numeric(Datum - min(Datum)) + 1,
+          Week  = trunc(Day/7) + 1
+  )
 
 ##########################################################################################
 #
-# (4) filtere alle Daten ohne GeoInformation (longitude, latitude) heraus,
-#     da die Arbeit sich auf regionale Infektionsrisiken beschränkt
+#     Clean-Up Data
 #
 ##########################################################################################
 
-ds.loc <- ds.all %>% dplyr::filter(!is.na(lng))
-
+if (exists("Timetable.raw"))  rm("Timetable.raw")
+if (exists("Cases.raw"))      rm("Cases.raw")
+# if (exists("icd10.chapters")) rm("icd10.chapters")
+# if (exists("icd10.codes"))    rm("icd10.codes")
+# if (exists("icd10.groups"))   rm("icd10.groups")

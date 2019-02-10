@@ -256,6 +256,56 @@ regions <-
 
 #####################################################################
 #
+# Relative Häufigkeiten
+#
+#####################################################################
+ds.A09.region.nr <- ds.infect.codes.region.nr       %>% 
+  dplyr::filter(Code.ID=="A09") %>% 
+  arrange(desc(Anzahl))    
+
+write_delim(ds.A09.region.nr, "data/Results/ds.A09.region-aggrgiert.csv", delim=";")
+
+
+ggplot(ds.A09.region.nr) + 
+  geom_bar(aes(x=reorder(Region, Anzahl), y=Anzahl), stat="identity") + 
+  coord_flip()
+
+
+ds.A09.ship.nr <- ds.infect.codes.ship.nr       %>% 
+  dplyr::filter(Code.ID=="A09") %>% 
+  arrange(desc(Anzahl))    
+write_delim(ds.A09.ship.nr, "data/Results/ds.A09.ship-aggrgiert.csv", delim=";")
+
+
+ggplot(ds.A09.ship.nr) + 
+  geom_bar(aes(x=Schiff, y=relFreq), stat="identity") + 
+  coord_flip()
+
+ds.tmp <- ds.infect.codes.ship.region %>% 
+  dplyr::filter(Code.ID == "A09")     %>% 
+  group_by(Region,Schiff)             %>% 
+  summarize(Anzahl = sum(Anzahl), PaxNr = mean(PaxNr), CrewNr=mean(CrewNr)) %>% 
+  mutate(relFreq=Anzahl/(PaxNr+CrewNr))
+
+ggplot(ds.tmp, aes(x=Schiff, y=Region, size=relFreq)) + geom_point(color="blue", alpha=1/3)
+
+################################################
+#
+# nächster Versuch basierend auf ds.infect.codes
+#
+################################################
+
+ds.A09 <- ds.infect.codes %>%
+  dplyr::filter(Code.ID == "A09")
+
+
+
+
+
+
+
+#####################################################################
+#
 # Algorithm to get Passengers per days
 #
 #####################################################################
