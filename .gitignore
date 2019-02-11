@@ -5,6 +5,7 @@ packrat/src/
 input*
 data*
 workspace.R
+tmp.R
 
 #-----------------------------------------------------------
 # File R.gitignore from https://github.com/github/gitignore

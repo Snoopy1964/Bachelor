@@ -17,30 +17,30 @@ source('97 - loadLocalMaps.R')
 #----------------------------------------------------------------------
 
 # ToDo: !!!!!!!!!!!!!!!!!!!!!! Hier stimmt was nicht!!!!!!!!!!!!!!!!!!!!!
-# zentrale Tabelle Fahrplan der Schiffe im gesamten Zeitraum
-cat("\n\nTimetable: zentrale Tabelle Fahrplan der Schiffe im gesamten Zeitraum",
-      "\n--------------------------------------------------------------------------\n")
-print(Timetable        %>% 
-      group_by(Schiff, TourNr) %>%
-      summarize(min(Datum),max(Datum), NrDays = n()) %>%
-      summarize(NrTours = n(), NrDays=sum(NrDays))
-        
-)
-
 # zentrale Tabelle Fahrplan der Schiffe im Analyse Zeitraum 2015 - 2017
 cat("\n\nTimetable: zentrale Tabelle Fahrplan der Schiffe im Analyse Zeitraum 2015 - 2017",
-      "\n-------------------------------------------------------------------------------------\n")
-print(Timetable                                                   %>% 
-      dplyr::filter(Datum >= "2015-01-01" & Datum < "2018-01-01") %>% 
-      group_by(Schiff)                                            %>% 
-      summarize(min(Datum),max(Datum), NrDays = n())
+    "\n-------------------------------------------------------------------------------------\n")
+print(
+  timetable.day                                                 %>% 
+    dplyr::filter(Datum >= "2015-01-01" & Datum < "2018-01-01") %>% 
+    group_by(Schiff)                                            %>% 
+    summarize(min(Datum),max(Datum), NrDays = n())
+)
+
+# zentrale Tabelle Fahrplan der Schiffe im gesamten Zeitraum
+cat("\n\nTimetable: zentrale Tabelle Fahrplan der Schiffe im gesamten Zeitraum",
+    "\n--------------------------------------------------------------------------\n")
+print(
+  timetable.day                                                 %>% 
+    group_by(Schiff, Region)                                    %>%
+    summarize(min(Datum),max(Datum), NrDays = n())
+  
 )
 
 
-
-# #----------------------------------------------------------------------
-# # Plots
-# #----------------------------------------------------------------------
+#----------------------------------------------------------------------
+# Plots
+#----------------------------------------------------------------------
 # 
 # 
 # # Anzahl der Cases (Fälle) gruppiert nach Kapitel
@@ -88,7 +88,7 @@ gg.region <- ggmap(map.Welt) +
     hjust = 0, nudge_x = 5,
     size  = 4 )
 
-ds.tmp <- ds.infect.codes.ship.region %>%
+ds.tmp <- cases.infect.codes.ship.region %>%
   group_by(Region) %>%
   summarize(
     Anzahl = sum(Anzahl),
@@ -102,15 +102,69 @@ gg.region +
   scale_size(range=c(4,10)) +
   theme(legend.position="top")
 
-# ds.tmp <- ds.infect.codes.region.nr %>%
-#   group_by(Region) %>%
-#   summarize(Anzahl = sum(Anzahl)) %>%
-#   left_join(Regions, by="Region")
-# 
-# gg.region +
-#   geom_point(data=ds.tmp, mapping=aes(x=lng, y=lat, size=Anzahl), alpha = 1/3) + 
-#   scale_size(range=c(4,10)) +
-#   theme(legend.position="top")
+
+#------------------------------------------------------------------------
+# Overview frequencies all Cases in time period [2015-01-01, 2017-12-31] 
+# grouped by chapters
+#------------------------------------------------------------------------
+
+cases.nr <- cases                     %>% 
+  group_by(Kapitel.ID, Kapitel.Titel) %>% 
+  summarise(Anzahl = n())             %>% 
+  arrange(desc(Anzahl))
+
+# - plotte die Verteilung der icd10-Kapitel (ranked nach Anzahl)
+gg.cases <- ggplot(cases.nr)
+
+# Verkürze die Titel der x-Achsen (hier bei y, da coord_flip())
+x.Axis       <- icd10.chapters[["Kapitel.Titel"]]
+x.Axis.Label <- ifelse(str_length(icd10.chapters[["Kapitel.Titel"]]) >= 56, 
+                       str_c(str_sub(icd10.chapters[["Kapitel.Titel"]], 1, 56), "...", sep=""), 
+                       str_c(icd10.chapters[["Kapitel.Titel"]]))
+
+# print(
+gg.cases +
+  geom_bar(
+    mapping = aes(x = reorder(Kapitel.Titel, Anzahl), 
+                  y = Anzahl
+    ),
+    stat = "identity")                            +
+  scale_x_discrete(breaks = x.Axis, labels = x.Axis.Label) +
+  ggtitle("Verteilung der Cases bzgl. ICD10-Kapitel")    +
+  labs(x = "ICD10-Kapitel",
+       y = "Anzahl Cases")                              +
+  # scale_y_log10() +
+  theme(
+    plot.title  = element_text(hjust = 0.5,
+                               vjust = 7),
+    plot.margin = margin(1, 1, 1, 1, "cm")
+  )             +
+  coord_flip()
+#)
+
+
+#print(
+gg.cases +
+  geom_bar(
+    mapping = aes(x = reorder(Kapitel.Titel,-Anzahl), 
+                  y = Anzahl
+    ),
+    stat = "identity")                            +
+  scale_x_discrete(breaks = x.Axis, labels = x.Axis.Label) +
+  ggtitle("Verteilung der Cases bzgl. ICD10-Kapitel")    +
+  labs(x = "ICD10-Kapitel",
+       y = "Anzahl Cases")   +
+  theme(
+    axis.text.x = element_text(
+      angle = 60,
+      hjust = 1,
+      vjust = 1
+    ),
+    plot.title  = element_text(hjust = 0.5,
+                               vjust = 7),
+    plot.margin = margin(1, 1, 1, 1, "cm")
+  )
+# )
 
 #-------------------------------------------------------
 # Summary infect cases / total number of (Passengers plus Crew)

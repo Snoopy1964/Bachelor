@@ -1,11 +1,19 @@
 ##########################################################################################
 #
 # Definitionen
-# - Route: 
+#
+# - Region:
+#     frei definiertes Polygon, welches den Fahrgebieten der Schiffe entspricht.
+#     Die Region ist somit eine Gruppierung von angefahrenen Häfen. An den Häfen ist 
+#     die GeoPosition festgelegt. Alle Häfen werden einer Region zugeordnet. Dieser 
+#     wiederum wird ein zentraler Punkt (geschätzt) als Mittelpunkt des Polygons 
+#     einer Region als GeoPosition zugeordnet
+#
+# - Route: (nicht verwendet in der Arbeit, da zu wenig Statistik/Route)
 #     entspricht eine Abfolge von Häfen, enthält keine konkreten Zeitpunkte, 
 #     kann von verschiedenen Schiffen abgefahren werden. 
 #
-# - Tour (Trip): 
+# - Tour (Trip):  (nicht verwendet in der Arbeit, da selbst für Trips zu wenig Statistik/Trip)
 #     Eine Tour (ein Trip) entspricht einer buchbaren Reise eines Schiffes auf einer bestimmten Route
 #     zu einem bestimmten Zeitpunkt  
 #     mit Start, Ende und Passagierwechsel. 
@@ -46,7 +54,7 @@
 #     - filtere alle Daten ohne GeoInformation (longitude, latitude) heraus,
 #       da die Arbeit sich auf regionale Infektionsrisiken beschränkt
 #
-# (4) Verknüpfe GeoDaten, Passagierzahlen etc. zu Schiffsfahrplan (Timetable)
+# (4) Verknüpfe GeoDaten, Passagierzahlen etc. zu Schiffsfahrplan (timetable.day)
 #     (Wo befindet sich welches Schiff an welchem Tag in welcher Region)
 #     - Join von Port und Tour Number zu "Timetable"
 #     - Join der GeoInformationen
@@ -93,7 +101,7 @@ source("97 - loadLocalMaps.R", encoding = "UTF-8")
 
 # Alternativ WHO version, aber dort fehlen D90, I84, O09 und T89
 # source('01 - readICD10-WHO.R')
-source('01 - readICD10-GM-2018.R')
+source('96 - readICD10-GM-2018.R')
 
 
 ##########################################################################################
@@ -169,23 +177,6 @@ cases <- Cases.raw %>%
   dplyr::filter(Datum >= "2015-01-01" & Datum < "2018-01-01")
 
 
-# ds.all.old <- Cases %>%
-#   #     - Konvertiere ICD10 zum 3 digit code von icd10.codes
-#   mutate(Code.ID = str_sub(ICD10, start=1, end=3))     %>%
-#   #  - Join von ICD10 Chapters, Groups und Codes (nur 3 digit codes!)
-#   left_join(icd10.codes, by=c("Code.ID"))              %>%
-#   #  - Join von Port und Tour Number
-#   left_join(Timetable[,c("Datum", "Schiff", "TourNr", "Port Name")], by=c("Datum", "Schiff")) %>%
-#   #  - Join der GeoInformationen
-#   left_join(Ports, by="Port Name")                     %>%
-#   #  - Join der Route und der Region, sowie der Passagierzahlen (Pax)
-#   # left_join(select(ToursPax, -Year, -Region), by=c("TourNr", "Schiff"))        %>%
-#   left_join(select(ToursPax, -Year), by=c("TourNr", "Schiff"))        %>%
-#   #  - Join der Crew-Zahlen, abgeschätzt durch max. Capa bei Vollbesetzung
-#   left_join(select(Ships,"Schiff","CrewNr"),by="Schiff")    %>%
-#   #  - Berechne die Gesamtanzahl der Personen an Board (TotalNr)
-#   mutate(TotalNr = PaxNr + CrewNr)
-
 ##########################################################################################
 #
 # (4) Verknüpfe GeoDaten, Passagierzahlen etc. zu Schiffsfahrplan (Timetable)
@@ -196,7 +187,6 @@ cases <- Cases.raw %>%
 #     - Join der Crew-Zahlen, abgeschätzt durch max. Capa bei Vollbesetzung
 #
 ##########################################################################################
-
 
 # - Passagierzahlen pro Tag (PersonenTage)
 timetable.day <- select(Timetable.raw, Datum, Schiff, TourNr, `Port Name`, LocDesc) %>% 
