@@ -22,3 +22,8 @@ library("ggmap")
 library("ggrepel")
 library("geojsonio")
 
+#-------------------------------
+# set options
+#-------------------------------
+# set encoding
+options(encoding="UTF-8")

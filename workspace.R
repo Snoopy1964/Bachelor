@@ -217,6 +217,20 @@ graph <- ggplot(ds.loc, aes(x = Datum)) +
   )
 graph
 
+#-------------------------------------------------------
+# - Gesamtpassagierzahlen pro Monat (Summe aller Schiffe)
+#-------------------------------------------------------
+gg <- personNr.ship.day %>% 
+  group_by(Month)  %>% 
+  summarize(PaxNr = sum(PaxNr)/length(unique(Day)), CrewNr = sum(CrewNr)/length(unique(Day))) %>%
+  ggplot()
+
+gg +
+  geom_smooth(aes(x=Month, y=PaxNr)) +
+  geom_line(aes(x=Month, y=PaxNr, color="black"))   +
+  geom_line(aes(x=Month, y=CrewNr, color="red")) +
+  ylim(0, 16000) 
+
 
 #######################################################
 # Lon/Lat Mittelmeer boundery
@@ -295,10 +309,26 @@ ggplot(ds.tmp, aes(x=Schiff, y=Region, size=relFreq)) + geom_point(color="blue",
 #
 ################################################
 
-ds.A09 <- ds.infect.codes %>%
-  dplyr::filter(Code.ID == "A09")
+ds.A09.day <- ds.infect.codes     %>%
+  dplyr::filter(Code.ID == "A09") %>%
+  group_by(Datum, Schiff, Region) %>%
+  summarize(Anzahl=n(), PaxPersDays = mean(PaxNr))
+
+ds.A09.ship <- ds.A09.day         %>%
+  group_by(Schiff)                %>%
+  summarize(Anzahl=sum(Anzahl), NrDays=n(), PaxPersDays = sum(PaxPersDays)) %>%
+  mutate(relFreq = PaxPersDays/NrDays)
 
 
+ds.B01.day <- ds.infect.codes     %>%
+  dplyr::filter(Code.ID == "B01") %>%
+  group_by(Datum, Schiff, Region) %>%
+  summarize(Anzahl=n(), PaxPersDays = mean(PaxNr))
+
+ds.B01.ship <- ds.B01.day         %>%
+  group_by(Schiff)                %>%
+  summarize(Anzahl=sum(Anzahl), NrDays=n(), PaxPersDays = sum(PaxPersDays)) %>%
+  mutate(relFreq = PaxPersDays/NrDays)
 
 
 

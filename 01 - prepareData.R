@@ -29,6 +29,8 @@ infect.chapters <- c(
 )
 
 cases.infect.chapters <- cases %>% dplyr::filter(Kapitel.ID %in% infect.chapters )
+# save data as csv-file
+write_delim(cases.infect.chapters, "data/Results/ds.infect.cases.csv", delim = ";")
 
 
 # selected infect.codes for analysis
@@ -48,11 +50,20 @@ infect.codes <- c(
 
 cases.infect.codes <- cases %>% dplyr::filter(Code.ID %in% infect.codes )
 
+# filter auf infect codes und Aggregation auf Tages Ebene
+cases.day <- cases.infect.codes               %>%
+  group_by(Datum, Schiff, Code.ID, PaxStatus) %>%
+  summarize(Anzahl = n())                     %>%
+  # Tidying data (https://r4ds.had.co.nz/tidy-data.html#spreading), 
+  # PaxStatus splitted die Observations in 2 Zeilen (Anzahl Crew, Anzahl Passagiere)
+  # -> diese müssen zusammengeführt werden in eine Zeile
+  spread(PaxStatus, value = Anzahl, fill = 0, sep=NULL)
 
-# save data as csv-file
-# write.csv2 is mixing up with "," and 1000 separater "."
-# write.csv2(ds.infect.chapters, file="data/Results/ds.infect.cases.csv", fileEncoding = "UTF-8")
-write_delim(cases.infect.chapters, "data/Results/ds.infect.cases.csv", delim = ";")
+# (5) Verknüpfe Schiffsfahrplan mit Cases
+#     - Join timetable.day auf cases.day
+ds <- timetable.day                              %>% 
+  left_join(cases.day, by=c("Datum", "Schiff"))  %>%
+  mutate(Crew = if_else(is.na(Crew), 0, Crew), Pax = if_else(is.na(Pax), 0, Pax))
 
 
 

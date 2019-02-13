@@ -61,7 +61,12 @@
 #     - Join der Route und der Region, sowie der Passagierzahlen (Pax)
 #     - Join der Crew-Zahlen, abgeschätzt durch max. Capa bei Vollbesetzung
 #
-#--------------------------------
+#------------------------------------------------
+# some useful functions 
+#------------------------------------------------
+nrDays <- function(x) {return(length(unique(x)))}
+
+#------------------------------------------------
 # Crew Zahlen pro Schiff
 #
 # MS1:  850
@@ -87,7 +92,8 @@ Ships <- tribble(~Schiff, ~CrewNr, ~MaxPaxNr, ~ComissioningYear, ~Decommisioning
 #--------------------------------
 # Load maps
 #
-source("97 - loadLocalMaps.R", encoding = "UTF-8")
+# source("97 - loadLocalMaps.R", encoding = "UTF-8")
+source("97 - loadLocalMaps.R")
 
 
 ##########################################################################################
@@ -122,7 +128,7 @@ Cases.raw <- read_delim("data/Cases.csv",";",
                       Schiff = col_factor(levels = c("MS1", "MS2", "MS3", "MS4", "MS5", "MS6"))
                     ), 
                     trim_ws = TRUE)
-
+Cases.raw <- Cases.raw %>% mutate(PaxStatus = if_else(PaxStatus == "0", "Crew", "Pax", "NA"))
 # Schiffsfahrplan
 Timetable.raw <- read_delim(
   "data/Timetable.csv",

@@ -6,6 +6,8 @@ input*
 data*
 workspace.R
 tmp.R
+export2CSV.R
+plots
 
 #-----------------------------------------------------------
 # File R.gitignore from https://github.com/github/gitignore
