@@ -66,6 +66,13 @@
 #------------------------------------------------
 nrDays <- function(x) {return(length(unique(x)))}
 
+export2csv <- function(ds, fileName) {
+  directory <- "C:\\Users\\user\\OneDrive\\Bachelorarbeit\\data\\Results\\"
+  path      <- str_c(directory, fileName)
+  write_delim(ds, path, delim=";")
+}
+
+
 #------------------------------------------------
 # Crew Zahlen pro Schiff
 #

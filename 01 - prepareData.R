@@ -61,10 +61,57 @@ cases.day <- cases.infect.codes               %>%
 
 # (5) Verknüpfe Schiffsfahrplan mit Cases
 #     - Join timetable.day auf cases.day
-ds <- timetable.day                              %>% 
+# ist nur als Sicherung hier - nicht mehr verwenden!
+ds.falsch <- timetable.day                          %>%
   left_join(cases.day, by=c("Datum", "Schiff"))  %>%
-  mutate(Crew = if_else(is.na(Crew), 0, Crew), Pax = if_else(is.na(Pax), 0, Pax))
+  mutate(
+    Crew = if_else(is.na(Crew), 0, Crew), 
+    Pax = if_else(is.na(Pax), 0, Pax))
 
+# (6) Bilde eine fortluafende TimeSeries (pro Tag) für jeden Infect (A0, A16, B0, B16, J11)
+#     - Join timetable.day auf cases.day.A09
 
+ts.A09 <- timetable.day                          %>%
+  left_join(cases.day %>% dplyr::filter(Code.ID == "A09"), by=c("Datum", "Schiff"))  %>%
+  mutate(
+    Crew    = if_else(is.na(Crew), 0, Crew), 
+    Pax     = if_else(is.na(Pax), 0, Pax),
+    Code.ID = "A09"
+  )
 
+ts.A16 <- timetable.day                          %>%
+  left_join(cases.day %>% dplyr::filter(Code.ID == "A16"), by=c("Datum", "Schiff"))  %>%
+  mutate(
+    Crew    = if_else(is.na(Crew), 0, Crew), 
+    Pax     = if_else(is.na(Pax), 0, Pax),
+    Code.ID = "A16"
+  )
+
+ts.B01 <- timetable.day                          %>%
+  left_join(cases.day %>% dplyr::filter(Code.ID == "B01"), by=c("Datum", "Schiff"))  %>%
+  mutate(
+    Crew    = if_else(is.na(Crew), 0, Crew), 
+    Pax     = if_else(is.na(Pax), 0, Pax),
+    Code.ID = "B01"
+  )
+
+ts.B02 <- timetable.day                          %>%
+  left_join(cases.day %>% dplyr::filter(Code.ID == "B02"), by=c("Datum", "Schiff"))  %>%
+  mutate(
+    Crew    = if_else(is.na(Crew), 0, Crew), 
+    Pax     = if_else(is.na(Pax), 0, Pax),
+    Code.ID = "B02"
+  )
+
+ts.J11 <- timetable.day                          %>%
+  left_join(cases.day %>% dplyr::filter(Code.ID == "J11"), by=c("Datum", "Schiff"))  %>%
+  mutate(
+    Crew    = if_else(is.na(Crew), 0, Crew), 
+    Pax     = if_else(is.na(Pax), 0, Pax),
+    Code.ID = "J11"
+  )
+
+ts <- rbind(ts.A09,ts.A16, ts.B01, ts.B02, ts.J11)
+
+rm(list = ls(pattern="ts\\.[ABJ]{0-9}{0-9}"))
 

@@ -73,8 +73,8 @@ personNr.ship.region <- personNr.ship.day %>%
 #-----------------------------------------------------------------
 
 # A09
-ds.A09.day <- ds %>% 
-  dplyr::filter(Code.ID == "A09"| is.na(Code.ID)) %>% 
+ts.A09.day <- ts %>% 
+  dplyr::filter(Code.ID == "A09") %>% 
   group_by(Schiff, Region, `Port Name`, Datum, Day) %>% 
   summarize(
     Nr.Days=nrDays(Day), 
@@ -87,7 +87,7 @@ ds.A09.day <- ds %>%
     )
 
 # relative Häufigkeit pro Infektions Code und pro Region im gesamten Zeitraum
-ds.region <- ds %>% 
+ts.region <- ts %>% 
   group_by(Region, Code.ID) %>% 
   summarize(
     Nr.Days=nrDays(Day), 

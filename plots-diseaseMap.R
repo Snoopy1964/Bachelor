@@ -27,7 +27,7 @@ theme_update(plot.subtitle = element_text(hjust = 0.5))
 
 # A09 - Gastroenteritis
 # Disease Map für Regionen
-ds.tmp <- ds.region %>% 
+ds.tmp <- ts.region %>% 
   dplyr::filter(Code.ID == "A09")                  %>%
   mutate(
     Nr.Cases = Nr.Cases.Pax + Nr.Cases.Crew, 
@@ -36,6 +36,7 @@ ds.tmp <- ds.region %>%
 
 ggmap(map.Welt) + 
   geom_polygon(data = regions, aes(long, lat, group = group, fill = region), alpha = 0.5) +
+  scale_fill_brewer(palette = "Reds") +
   geom_point(data    = ds.tmp,
              mapping = aes(x    =lng, 
                            y    =lat, 
@@ -60,7 +61,7 @@ ggsave("C:\\Users\\user\\OneDrive\\Bachelorarbeit\\Diagramme\\diseaseMap.A09.reg
 
 # A16, B01, B02, J11
 # Disease Map für Regionen
-ds.tmp <- ds.region %>% 
+ds.tmp <- ts.region %>% 
   dplyr::filter(Code.ID %in% c("A16", "B01", "B02", "J11")) %>%
   mutate(
     Nr.Cases = Nr.Cases.Pax + Nr.Cases.Crew, 
@@ -78,13 +79,13 @@ ggmap(map.Welt) +
   )   + 
   facet_wrap( ~ Code.ID )                    +
   geom_text_repel(
-    data = ds.tmp,
+    data = ds.tmp %>% dplyr::filter(relFreq != 0),
     mapping = aes(x = lng, y = lat, label = sprintf("%.4f", relFreq)),
     nudge_y = 2,
     nudge_x = 20,
     size = 3
   ) +
-  ggtitle(str_c("Disease Map ","Infektionskrankheiten II")) + 
+  ggtitle("Disease Map Infektionskrankheiten II", subtitle =  "aggregiert 2015-2017") + 
   theme(#legend.title     = "ICD10 Code",
     legend.position  = "right",
     legend.direction = "vertical")
