@@ -336,7 +336,47 @@ ds.B01.ship <- ds.B01.day         %>%
 
 #####################################################################
 #
-# Algorithm to get Passengers per days
+# more experiments with chisq
 #
 #####################################################################
+
+# x <- ts.region %>% dplyr::filter(Code.ID=="A09" & Region != "Nordamerika") %>%
+x.A09 <- ts.region %>% dplyr::filter(Code.ID=="A09") %>%
+  mutate(
+    Nr.avg.Crew  = Pd.Crew/Nr.Days,
+    Nr.avg.Pax   = Pd.Pax/Nr.Days,
+    Nr.Cases     = Nr.Cases.Crew + Nr.Cases.Pax,
+    Nr.not.Cases = (Nr.avg.Crew + Nr.avg.Pax)-Nr.Cases  ) %>%
+  select(Nr.Cases, Nr.not.Cases)
+
+x.A09.cs2 <- as.data.frame((x.A09[,2:3]))
+dimnames(x.A09.cs2) <- list(pull(x.A09[,1]), c("A09", "!A09"))
+cs2 <- chisq.test(x.A09.cs2)
+x.A09 %>% 
+  add_column(Residuen = cs2$residuals[,1]) %>% 
+  ggplot(aes(x=Region, y=Residuen)) + geom_bar(stat="identity") + coord_flip()
+x.A09 %>% 
+  add_column(Chi2 = (cs2$residuals[,1])**2) %>% 
+  ggplot(aes(x=Region, y=Chi2)) + geom_bar(stat="identity") + coord_flip()
+
+ggsave("C:\\Users\\user\\OneDrive\\Bachelorarbeit\\Diagramme\\Residuals.A09.Region.png",
+width = 297, height =210, units = "mm" )
+
+x.A16 <- ts.region %>% dplyr::filter(Code.ID=="A16") %>%
+  mutate(
+    Nr.avg.Crew  = Pd.Crew/Nr.Days,
+    Nr.avg.Pax   = Pd.Pax/Nr.Days,
+    Nr.Cases     = Nr.Cases.Crew + Nr.Cases.Pax,
+    Nr.not.Cases = (Nr.avg.Crew + Nr.avg.Pax)-Nr.Cases  ) %>%
+  select(Nr.Cases, Nr.not.Cases)
+
+x.A16.cs2 <- as.data.frame((x.A16[,2:3]))
+dimnames(x.A16.cs2) <- list(pull(x.A16[,1]), c("A16", "!A16"))
+cs2 <- fisher.test(x.A16.cs2, workspace = 100000000, simulate.p.value = TRUE)
+x.A16 %>% 
+  add_column(Residuen = cs2$residuals[,1]) %>% 
+  ggplot(aes(x=Region, y=Residuen)) + geom_bar(stat="identity") + coord_flip()
+x.A16 %>% 
+  add_column(Chi2 = (cs2$residuals[,1])**2) %>% 
+  ggplot(aes(x=Region, y=Chi2)) + geom_bar(stat="identity") + coord_flip()
 

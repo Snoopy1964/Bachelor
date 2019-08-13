@@ -2,8 +2,8 @@
 # Disease-Maps
 #
 # ToDo:
-#
-#
+# - Regionen mit rot füllen, je nach relativer Häufigkeit 
+#   ggplot2::cut_interval() genauer anschauen (https://gis.stackexchange.com/questions/178597/how-to-create-a-continuous-scale-with-distinct-custom-color-and-value-breaks-wit)
 #
 #
 #
@@ -28,7 +28,7 @@ theme_update(plot.subtitle = element_text(hjust = 0.5))
 # A09 - Gastroenteritis
 # Disease Map für Regionen
 ds.tmp <- ts.region %>% 
-  dplyr::filter(Code.ID == "A09")                  %>%
+  dplyr::filter(Code.ID == "K52")                  %>%
   mutate(
     Nr.Cases = Nr.Cases.Pax + Nr.Cases.Crew, 
     relFreq = Nr.Cases/((Pd.Crew+Pd.Pax)/Nr.Days)) %>%
@@ -36,7 +36,7 @@ ds.tmp <- ts.region %>%
 
 ggmap(map.Welt) + 
   geom_polygon(data = regions, aes(long, lat, group = group, fill = region), alpha = 0.5) +
-  scale_fill_brewer(palette = "Reds") +
+  # scale_fill_brewer(palette = "Reds") +
   geom_point(data    = ds.tmp,
              mapping = aes(x    =lng, 
                            y    =lat, 
